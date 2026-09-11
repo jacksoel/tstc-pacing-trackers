@@ -1,0 +1,52 @@
+name: Course data correction
+description: Report a wrong module count, drop-date target, or term sequence
+title: "[data] "
+labels: ["data", "needs-triage"]
+body:
+  - type: dropdown
+    id: program
+    attributes:
+      label: Program
+      options:
+        - CNSA (Computer Networking & Systems Administration)
+        - CYS (Cybersecurity)
+    validations:
+      required: true
+  - type: input
+    id: course
+    attributes:
+      label: Course code
+      placeholder: e.g. ITNW1308
+    validations:
+      required: true
+  - type: dropdown
+    id: field
+    attributes:
+      label: Which value is wrong?
+      options:
+        - Total modules
+        - Required by Nov. 20
+        - Recommended pace
+        - Term sequence
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: current
+    attributes:
+      label: Current value shown
+    validations:
+      required: true
+  - type: input
+    id: correct
+    attributes:
+      label: Correct value
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / source
+      description: Link to the Canvas shell, catalog page, or advising note that confirms this.
+    validations:
+      required: true

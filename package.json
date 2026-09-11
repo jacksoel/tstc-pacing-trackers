@@ -1,0 +1,18 @@
+{
+  "name": "tstc-pacing-trackers",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive CNSA and CYS course pacing trackers, built from a JSON data source via a scripted, tested pipeline.",
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node test/smoke.mjs",
+    "ci": "npm run validate && npm run build && npm run test",
+    "publish:cnsa": "node scripts/publish.mjs cnsa $CNSA_DOC_ID \"CNSA-Pacing-Tracker\"",
+    "publish:cys": "node scripts/publish.mjs cys $CYS_DOC_ID \"CYS-Pacing-Tracker\""
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

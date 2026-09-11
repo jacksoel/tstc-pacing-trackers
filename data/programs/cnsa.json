@@ -1,0 +1,145 @@
+{
+  "aas": {
+    "label": "CNSA — Associate (AAS)",
+    "short": "AAS",
+    "award": "AAS",
+    "months": 20,
+    "unit": "Semester",
+    "terms": [
+      {
+        "courses": [
+          "ITNW1308",
+          "ITNW1358",
+          "ITSC1325"
+        ]
+      },
+      {
+        "courses": [
+          "ITCC1314",
+          "ITNW1345",
+          "ITSC1316"
+        ]
+      },
+      {
+        "courses": [
+          "ITCC1344",
+          "ITNW1313",
+          "ITSY1342",
+          "ITNW2354"
+        ]
+      },
+      {
+        "courses": [
+          "ITCC2320",
+          "ITSE1329"
+        ]
+      },
+      {
+        "courses": [
+          "ITNW2335"
+        ]
+      }
+    ],
+    "options": [
+      [
+        "ITNW1309",
+        "ITCC2343"
+      ],
+      [
+        "ITSC2370",
+        "ITSC2386"
+      ]
+    ]
+  },
+  "cer2": {
+    "label": "IT Support Tier 2 (Certificate)",
+    "short": "Tier 2",
+    "award": "CER2",
+    "months": 12,
+    "unit": "Term",
+    "terms": [
+      {
+        "courses": [
+          "ITNW1308",
+          "ITNW1358",
+          "ITSC1325"
+        ]
+      },
+      {
+        "courses": [
+          "ITCC1314",
+          "ITNW1345",
+          "ITSC1316"
+        ]
+      },
+      {
+        "courses": [
+          "ITCC1344",
+          "ITNW1313",
+          "ITSY1342",
+          "ITNW2354"
+        ]
+      }
+    ]
+  },
+  "cer1": {
+    "label": "IT Support Tier 1 (Certificate)",
+    "short": "Tier 1",
+    "award": "CER1",
+    "months": 8,
+    "unit": "Term",
+    "terms": [
+      {
+        "courses": [
+          "ITNW1308",
+          "ITNW1358",
+          "ITSC1325"
+        ]
+      },
+      {
+        "courses": [
+          "ITCC1314",
+          "ITNW1345",
+          "ITSC1316"
+        ]
+      }
+    ]
+  },
+  "cloud": {
+    "label": "Cloud Computing (Certificate)",
+    "short": "Cloud",
+    "award": "CER2",
+    "months": 16,
+    "unit": "Term",
+    "terms": [
+      {
+        "courses": [
+          "ITNW1308",
+          "ITNW1358",
+          "ITNW1313"
+        ]
+      },
+      {
+        "courses": [
+          "ITNW1345",
+          "ITSC1316",
+          "ITSE1329"
+        ]
+      },
+      {
+        "courses": [
+          "ITSY1342",
+          "ITNW2354",
+          "ITNW1336"
+        ]
+      },
+      {
+        "courses": [
+          "ITSC2325",
+          "ITNW2327",
+          "ITNW2329"
+        ]
+      }
+    ]
+  }
+}

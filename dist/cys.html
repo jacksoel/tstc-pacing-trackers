@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CYS Course Pacing Tracker</title>
+<meta property="og:title" content="CYS Course Pacing Tracker">
+<style>
+/* ---- TSTC brand theme (colors & type sampled from tstc.edu) ---- */
+  @font-face{font-family:"Hando";src:url("https://www.tstc.edu/wp-content/themes/tstc-theme-redesign/assets/fonts/Hando-Regular.woff") format("woff");font-weight:400;font-style:normal;font-display:swap;}
+  @font-face{font-family:"Hando";src:url("https://www.tstc.edu/wp-content/themes/tstc-theme-redesign/assets/fonts/Hando-Medium.woff") format("woff");font-weight:500;font-style:normal;font-display:swap;}
+  @font-face{font-family:"Hando";src:url("https://www.tstc.edu/wp-content/themes/tstc-theme-redesign/assets/fonts/Hando-Bold.woff") format("woff");font-weight:700;font-style:normal;font-display:swap;}
+  :root{
+    --paper:#F7F9FC;--card:#FFFFFF;--ink:#181818;--ink-soft:#393939;--muted:#737373;
+    --line:#E1E6EE;--line-strong:#C2CDDD;
+    --required:#002872;--required-tint:#CFE0F2;
+    --recommended:#2651A3;--recommended-tint:#E7EFFA;--recommended-ink:#00205C;
+    --remaining:#C9D2DF;--remaining-tint:#F1F4F9;
+    --ontrack:#1F7A3D;--minimum:#B8791A;--risk:#D13138;--complete:#19588F;
+    --shadow:0 1px 2px rgba(0,32,92,.06), 0 8px 24px rgba(0,32,92,.08);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased;padding:0 20px 72px;
+  }
+  .wrap{max-width:940px;margin:0 auto;}
+
+  header{padding:44px 0 26px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--required);font-weight:700;margin:0 0 10px;}
+  h1{font-family:"Hando",Georgia,"Times New Roman",serif;font-size:38px;line-height:1.08;margin:0 0 10px;font-weight:600;letter-spacing:-.01em;}
+  .sub{color:var(--ink-soft);font-size:16px;max-width:640px;margin:0;}
+
+  .meta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px;}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;box-shadow:var(--shadow);min-width:120px;}
+  .chip .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .chip .v{font-family:"Hando",Georgia,serif;font-size:22px;font-weight:600;line-height:1.1;margin-top:3px;}
+  .chip .v small{font-size:13px;color:var(--muted);font-family:inherit;font-weight:400;}
+  .chip.countdown{background:var(--required);border-color:var(--required);}
+  .chip.countdown .k{color:rgba(255,255,255,.75);}
+  .chip.countdown .v{color:#fff;}
+  .chip.countdown .v small{color:rgba(255,255,255,.8);}
+  .chip-pace{margin-top:8px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:#fff;}
+  .chip-pace .dotp{width:8px;height:8px;border-radius:50%;flex:none;}
+  .chip-pace.ok .dotp{background:#8FE3A8;box-shadow:0 0 0 3px rgba(143,227,168,.28);}
+  .chip-pace.bad .dotp{background:#FFC1B4;box-shadow:0 0 0 3px rgba(255,193,180,.28);}
+  .chip-pace .pp-label{font-weight:700;letter-spacing:.02em;}
+  .chip-pace .pp-num{color:rgba(255,255,255,.82);font-weight:400;}
+
+  .plan{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+  .plan-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;flex-wrap:wrap;}
+  .plan-summary-main{min-width:0;}
+  .plan-title{font-family:"Hando",Georgia,serif;font-size:15px;font-weight:600;margin:0;}
+  .plan-chosen{font-size:13px;color:var(--ink-soft);margin-top:2px;}
+  .plan-chosen b{color:var(--required);font-weight:700;}
+  .plan-change{border:1px solid var(--line-strong);background:var(--card);color:var(--ink-soft);padding:6px 14px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap;flex:none;}
+  .plan-change:hover{border-color:var(--required);color:var(--required);}
+  .plan-body{padding:0 18px 18px;border-top:1px solid var(--line);}
+  .plan-sub{font-size:12.5px;color:var(--muted);margin:14px 0 12px;}
+  .plan-row{display:flex;flex-wrap:wrap;gap:18px 26px;align-items:center;}
+  .plan-group{display:flex;flex-direction:column;gap:6px;}
+  .plan-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;}
+  .seg{display:flex;flex-wrap:wrap;gap:5px;}
+  .seg button{
+    border:1px solid var(--line-strong);background:var(--card);color:var(--ink-soft);
+    padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap;
+  }
+  .seg button:hover{border-color:var(--required);color:var(--required);}
+  .seg button.active{background:var(--required);border-color:var(--required);color:#fff;}
+  .plan-note{margin-top:12px;font-size:12px;color:var(--muted);font-style:italic;}
+
+  .custom-link{display:inline-block;margin-top:12px;font-size:12.5px;font-weight:600;color:var(--required);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+  .custom-link:hover{color:var(--ink);}
+  .custom-panel{margin-top:12px;border-top:1px dashed var(--line-strong);padding-top:12px;}
+  .custom-hint{font-size:12px;color:var(--muted);margin:0 0 8px;}
+  .custom-term{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:10px 0 4px;}
+  .custom-term:first-child{margin-top:0;}
+  .custom-grid{display:flex;flex-wrap:wrap;gap:4px 18px;}
+  .custom-row{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-soft);cursor:pointer;}
+  .custom-row input{accent-color:var(--required);cursor:pointer;}
+  .custom-actions{display:flex;gap:14px;align-items:center;margin-top:12px;}
+  .custom-apply{border:1px solid var(--line-strong);background:var(--card);color:var(--ink-soft);padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .custom-apply:hover{border-color:var(--required);color:var(--required);}
+  .custom-count{font-size:12px;color:var(--muted);}
+
+  .rollup{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
+  .rollup-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .rollup-title{font-family:"Hando",Georgia,serif;font-size:16px;font-weight:600;}
+  .rollup-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .rollup-num{font-family:"Hando",Georgia,serif;font-size:22px;font-weight:600;white-space:nowrap;}
+  .rollup-num b{color:var(--required);}
+  .rollup-num small{font-size:12px;color:var(--muted);font-family:inherit;font-weight:400;}
+
+  .bar{position:relative;display:flex;height:16px;border-radius:999px;overflow:hidden;background:#fff;border:1px solid var(--line-strong);margin-top:14px;}
+  .bar-sm{height:8px;margin-top:0;}
+  .bar .bseg{height:100%;transition:width .25s ease;}
+  .bseg.req-done{background:var(--required);}
+  .bseg.req-todo{background:var(--required);opacity:.32;}
+  .bseg.rec{background:var(--recommended);}
+  .bseg.rem{background:var(--remaining);}
+  .bar .threshold{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.65;}
+
+  .rollup-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:11px;font-size:12px;color:var(--muted);}
+  .rollup-legend .dot{width:11px;height:11px;border-radius:3px;display:inline-block;vertical-align:-1px;margin-right:5px;}
+  .dot.req-done{background:var(--required);}
+  .dot.req-todo{background:var(--required);opacity:.32;}
+  .dot.rec{background:var(--recommended);}
+  .dot.rem{background:var(--remaining);}
+  .rollup-legend .tick{width:2px;height:12px;background:var(--ink);opacity:.65;display:inline-block;vertical-align:-1px;margin-right:5px;}
+
+  .ctx-line{margin-top:16px;border-top:1px solid var(--line);padding-top:12px;}
+  .ctx-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:7px;}
+  .ctx-label{font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .ctx-label .ctx-tag{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--remaining-tint);border:1px solid var(--line);padding:2px 7px;border-radius:999px;margin-left:7px;font-weight:700;}
+  .ctx-num{font-size:12.5px;color:var(--muted);font-weight:600;}
+  .ctx-num b{color:var(--ink);}
+
+  .controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:14px;margin:20px 0 0;}
+  .reset{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:6px;}
+  .reset:hover{color:var(--risk);}
+
+  .legend{display:flex;flex-wrap:wrap;gap:18px;padding:14px 2px 4px;font-size:12.5px;color:var(--ink-soft);}
+  .legend .item{display:flex;align-items:center;gap:7px;}
+  .swatch{width:15px;height:15px;border-radius:4px;display:inline-block;}
+  .sw-req{background:var(--required);}
+  .sw-rec{background:var(--recommended);}
+  .sw-rem{background:var(--remaining);}
+  .sw-done{background:var(--required);position:relative;}
+  .sw-done::after{content:"✓";position:absolute;inset:0;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+
+  .sem-group{margin-top:22px;}
+  .sem-head{font-family:"Hando",Georgia,serif;font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin:0 0 12px;display:flex;align-items:center;gap:10px;}
+  .sem-head::after{content:"";flex:1;height:1px;background:var(--line);}
+  .tag{font-family:-apple-system,sans-serif;font-size:10px;letter-spacing:.06em;padding:3px 8px;border-radius:999px;font-weight:700;text-transform:uppercase;}
+  .cur-tag{background:var(--required);color:#fff;}
+  .prior-tag{background:var(--remaining-tint);color:var(--muted);border:1px solid var(--line);}
+  .up-tag{background:#fff;color:var(--muted);border:1px dashed var(--line-strong);}
+
+  .board-focus{background:#EEF4FB;border:1px solid var(--line-strong);border-radius:var(--radius);padding:14px 18px 18px;box-shadow:var(--shadow);}
+  .board-focus .sem-group{margin-top:12px;}
+  .board-focus .sem-head{margin-bottom:14px;}
+
+  .course{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow);}
+  .board-focus .course{box-shadow:none;}
+  .course.opt{background:#F4F7FC;border-style:dashed;border-color:var(--line-strong);}
+  .c-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .c-name{font-family:"Hando",Georgia,serif;font-size:19px;font-weight:600;letter-spacing:-.01em;}
+  .c-name .title{font-weight:400;font-size:15px;color:var(--ink-soft);}
+  .c-caption{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .status{font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:5px 11px;border-radius:999px;white-space:nowrap;color:#fff;}
+  .status.count{color:var(--ink-soft);background:var(--remaining-tint);font-weight:600;text-transform:none;letter-spacing:0;border:1px solid var(--line);}
+  .s-ahead{background:var(--required);}
+  .s-ontrack{background:var(--ontrack);}
+  .s-met{background:var(--ontrack);}
+  .s-behind{background:var(--minimum);}
+  .s-risk{background:var(--risk);}
+  .s-complete{background:var(--complete);}
+
+  /* Per-course pace track: where you are vs where you should be by today */
+  .paceline{margin-top:13px;}
+  .pacebar{position:relative;height:8px;border-radius:999px;background:var(--remaining-tint);border:1px solid var(--line);}
+  .pacebar-done{position:absolute;left:0;top:0;bottom:0;background:var(--required);border-radius:999px;transition:width .25s ease;}
+  .pacebar-exp{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);opacity:.6;}
+  .pacebar-exp::after{content:"today";position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap;}
+  .pace-cap{display:flex;justify-content:space-between;gap:10px;margin-top:16px;font-size:11.5px;color:var(--muted);}
+  .pace-cap .pc-right{font-weight:600;color:var(--ink-soft);}
+  .pace-note{margin-top:5px;font-size:12.5px;font-weight:600;}
+  .pace-note.ahead{color:var(--required);}
+  .pace-note.ontrack,.pace-note.met,.pace-note.complete{color:var(--ontrack);}
+  .pace-note.behind{color:var(--minimum);}
+  .pace-note.risk{color:var(--risk);}
+
+  .cells{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;}
+  .cell{flex:1 1 42px;min-width:38px;max-width:74px;height:44px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--card);cursor:pointer;transition:.13s;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);}
+  .cell[data-zone="required"]{background:var(--required-tint);border-color:var(--required);color:var(--required);}
+  .cell[data-zone="recommended"]{background:var(--recommended-tint);border-color:var(--recommended);color:var(--recommended-ink);}
+  .cell[data-zone="remaining"]{background:var(--remaining-tint);border-color:var(--remaining);color:var(--muted);}
+  .cell:hover{transform:translateY(-2px);}
+  .cell.done{color:#fff;}
+  .cell.done .num{display:none;}
+  .cell.done[data-zone="required"]{background:var(--required);border-color:var(--required);}
+  .cell.done[data-zone="recommended"]{background:var(--recommended);border-color:var(--recommended);}
+  .cell.done[data-zone="remaining"]{background:var(--remaining);color:var(--ink);}
+  .cell.done::before{content:"✓";font-size:16px;font-weight:700;}
+  .board-focus .cell{flex-basis:54px;max-width:96px;height:54px;font-size:13px;}
+
+  .tbd-note{margin-top:12px;font-size:13px;color:var(--muted);font-style:italic;}
+  .hint{margin-top:22px;font-size:13px;color:var(--muted);text-align:center;}
+
+  .board-toggle{margin:18px 0 0;text-align:center;font-size:12.5px;color:var(--muted);}
+  .board-toggle button{background:none;border:none;color:var(--required);font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0 2px;}
+  .board-toggle button:hover{color:var(--ink);}
+
+  @media (max-width:560px){ h1{font-size:30px;} .cell{flex-basis:38px;height:40px;} .board-focus .cell{flex-basis:46px;height:46px;} }
+  @media print{
+    body{padding:0;}
+    .controls,.reset,.hint,.plan,.board-toggle{display:none;}
+    .course{break-inside:avoid;box-shadow:none;}
+    .chip{box-shadow:none;}
+  }
+
+  /* TSTC brand bar + managed-by */
+  .brandbar{background:var(--required);color:#fff;margin:0 -20px;padding:0 20px;}
+  .brandbar-in{max-width:940px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:11px 0;flex-wrap:wrap;}
+  .brandbar-mark{font-family:"Hando",Arial,sans-serif;font-weight:700;font-size:15px;letter-spacing:.18em;text-transform:uppercase;background:#fff;color:var(--required);padding:3px 9px;border-radius:5px;}
+  .brandbar-name{font-size:13px;font-weight:600;letter-spacing:.02em;color:#DEEAF5;}
+  .brandbar-right{margin-left:auto;font-size:12px;color:#B2CEE7;font-weight:600;letter-spacing:.03em;}
+  .managed-by{margin-top:20px;text-align:center;font-size:12.5px;color:var(--muted);}
+  .managed-by a{color:var(--recommended);font-weight:700;text-decoration:none;}
+  .managed-by a:hover{color:var(--required);text-decoration:underline;}
+
+</style>
+<meta property="og:title" content="CYS Course Pacing Tracker"><meta property="og:title" content="CYS Course Pacing Tracker"></head>
+<body>
+<div class="brandbar"><div class="brandbar-in"><span class="brandbar-mark">TSTC</span><span class="brandbar-name">Texas State Technical College</span><span class="brandbar-right">Cybersecurity</span></div></div><div class="wrap">
+  <header>
+    <p class="eyebrow">Cybersecurity Program · Pacing Guide</p>
+    <h1>Are you on pace for the drop date?</h1>
+    <p class="sub">Every credential in the Cybersecurity program, at full-time or part-time intensity. Pick your plan and your tracking term — the tracker paces you against the <strong>Nov. 20, 2026 drop date</strong>.</p>
+    <div class="meta-row" id="metaRow"></div>
+  </header>
+
+  <div class="plan" id="plan"></div>
+  <div class="rollup" id="rollup"></div>
+
+  <div class="controls"><button class="reset" id="resetBtn">Reset all progress</button></div>
+
+  <div class="legend">
+    <span class="item"><span class="swatch sw-req"></span> Required by Nov. 20</span>
+    <span class="item"><span class="swatch sw-rec"></span> Recommended pace</span>
+    <span class="item"><span class="swatch sw-rem"></span> Rest of course</span>
+    <span class="item"><span class="swatch sw-done"></span> You've completed</span>
+  </div>
+
+  <div id="board"></div>
+  <div id="boardToggleHost"></div>
+
+  <p class="hint">Tap any module to mark it done. Your progress stays in this view only — nothing is saved to the sheet.</p>
+  <p class="managed-by">Managed by <a href="https://contacts.thehaystackapp.com/cards/15292917" target="_blank" rel="noopener noreferrer">Eric Jackson</a></p>
+</div>
+
+<script>
+const COURSE_META = {
+  "ITNW1358": {
+    "title": "Network+",
+    "total": 5,
+    "required": 3,
+    "target": 3
+  },
+  "ITNW1308": {
+    "title": "Implementing and Supporting Client Operating Systems",
+    "total": 7,
+    "required": 3,
+    "target": 4
+  },
+  "ITSC1325": {
+    "title": "Personal Computer Hardware",
+    "total": 5,
+    "required": 3,
+    "target": 3
+  },
+  "ITSC1316": {
+    "title": "Linux Installation and Configuration",
+    "total": 8,
+    "required": null,
+    "target": null
+  },
+  "ITSY2300": {
+    "title": "Operating System Security",
+    "total": 5,
+    "required": 3,
+    "target": 3
+  },
+  "ITSY1342": {
+    "title": "Information Technology Security",
+    "total": 5,
+    "required": null,
+    "target": null
+  },
+  "ITSY1374": {
+    "title": "Secure Linux Administration",
+    "total": 6,
+    "required": 3,
+    "target": 4
+  },
+  "ITNW1354": {
+    "title": "Implementing and Supporting Servers",
+    "total": 6,
+    "required": null,
+    "target": null
+  },
+  "ITSC1342": {
+    "title": "Shell Programming",
+    "total": 5,
+    "required": 3,
+    "target": 3
+  },
+  "ITDF1300": {
+    "title": "Introduction to Digital Forensics",
+    "total": 5,
+    "required": 3,
+    "target": 4
+  },
+  "ITSY2341": {
+    "title": "Security Management Practices",
+    "total": null,
+    "required": null,
+    "target": null
+  },
+  "ITSY2345": {
+    "title": "Network Defense and Countermeasures",
+    "total": 6,
+    "required": 4,
+    "target": 5
+  },
+  "ITSY2359": {
+    "title": "Security Assessment and Auditing",
+    "total": 6,
+    "required": 3,
+    "target": 4
+  },
+  "ITSY2371": {
+    "title": "Secure Cloud Implementation",
+    "total": null,
+    "required": null,
+    "target": null
+  },
+  "ITSY2386": {
+    "title": "Internship — Computer and Information Systems Security",
+    "total": null,
+    "required": null,
+    "target": null
+  },
+  "ITSY2372": {
+    "title": "Cybersecurity Capstone",
+    "total": null,
+    "required": null,
+    "target": null
+  },
+  "ITDF2420": {
+    "title": "Digital Forensics Collection",
+    "total": null,
+    "required": null,
+    "target": null
+  },
+  "ITDF2430": {
+    "title": "Digital Forensics Analysis",
+    "total": null,
+    "required": null,
+    "target": null
+  },
+  "ITDF2425": {
+    "title": "Digital Forensics Tools",
+    "total": null,
+    "required": null,
+    "target": null
+  },
+  "ITDF2435": {
+    "title": "Comprehensive Digital Forensics Project",
+    "total": null,
+    "required": null,
+    "target": null
+  }
+};
+
+const CREDENTIALS = {
+  "aas": {
+    "label": "Cybersecurity — Associate (AAS)",
+    "short": "AAS",
+    "award": "AAS",
+    "months": 20,
+    "unit": "Semester",
+    "terms": [
+      {
+        "courses": [
+          "ITNW1358",
+          "ITNW1308",
+          "ITSC1325"
+        ]
+      },
+      {
+        "courses": [
+          "ITSC1316",
+          "ITSY2300",
+          "ITSY1342"
+        ]
+      },
+      {
+        "courses": [
+          "ITSY1374",
+          "ITNW1354",
+          "ITSC1342"
+        ]
+      },
+      {
+        "courses": [
+          "ITDF1300",
+          "ITSY2341",
+          "ITSY2345"
+        ]
+      },
+      {
+        "courses": [
+          "ITSY2359",
+          "ITSY2371"
+        ]
+      }
+    ],
+    "options": [
+      [
+        "ITSY2386",
+        "ITSY2372"
+      ]
+    ]
+  },
+  "cer2": {
+    "label": "Cybersecurity Certificate 2",
+    "short": "Cert 2",
+    "award": "CER2",
+    "months": 16,
+    "unit": "Term",
+    "terms": [
+      {
+        "courses": [
+          "ITNW1358",
+          "ITNW1308",
+          "ITSC1325"
+        ]
+      },
+      {
+        "courses": [
+          "ITSC1316",
+          "ITSY2300",
+          "ITSY1342"
+        ]
+      },
+      {
+        "courses": [
+          "ITSY1374",
+          "ITNW1354",
+          "ITSC1342"
+        ]
+      },
+      {
+        "courses": [
+          "ITDF1300",
+          "ITSY2341",
+          "ITSY2345"
+        ]
+      }
+    ]
+  },
+  "cer1": {
+    "label": "Cybersecurity Certificate 1",
+    "short": "Cert 1",
+    "award": "CER1",
+    "months": 8,
+    "unit": "Term",
+    "terms": [
+      {
+        "courses": [
+          "ITNW1358",
+          "ITNW1308",
+          "ITSC1325"
+        ]
+      },
+      {
+        "courses": [
+          "ITSC1316",
+          "ITSY2300",
+          "ITSY1342"
+        ]
+      }
+    ]
+  },
+  "dif": {
+    "label": "Digital Forensics Specialist (ATC)",
+    "short": "Digital Forensics",
+    "award": "ATC",
+    "months": 8,
+    "unit": "Term",
+    "terms": [
+      {
+        "courses": [
+          "ITDF2420",
+          "ITDF2430"
+        ]
+      },
+      {
+        "courses": [
+          "ITDF2425",
+          "ITDF2435"
+        ]
+      }
+    ]
+  }
+};
+
+const CRED_ORDER = [
+  "aas",
+  "cer2",
+  "cer1",
+  "dif"
+];
+
+const done = {};
+Object.keys(COURSE_META).forEach(c => done[c] = 0);
+
+let state = { cred:"aas", intensity:"ft", trackTerm:1, customOpen:false, boardAll:false, planOpen:false };
+let customSet = null;
+
+const PACE_START = new Date(2026, 8, 10);
+const DROP_DATE  = new Date(2026, 10, 20);
+const PT_PER_TERM = 2;
+
+function cred(){ return CREDENTIALS[state.cred]; }
+function unitWord(){ return cred().unit || "Term"; }
+
+function flatCourses(c){
+  const out = [];
+  c.terms.forEach(t => t.courses.forEach(code => out.push(code)));
+  return out;
+}
+
+function displayTerms(){
+  const c = cred();
+  if(state.intensity === "ft") return c.terms;
+  const terms = [];
+  const req = flatCourses(c);
+  for(let i=0;i<req.length;i+=PT_PER_TERM){
+    const t = {courses:req.slice(i,i+PT_PER_TERM)};
+    if(i + PT_PER_TERM >= req.length && c.options) t.options = c.options;
+    terms.push(t);
+  }
+  return terms;
+}
+
+function termCount(){ return displayTerms().length; }
+function clampTerm(){ const n = termCount(); if(state.trackTerm > n) state.trackTerm = n; if(state.trackTerm < 1) state.trackTerm = 1; }
+function trackingIdx(){ return state.trackTerm - 1; }
+function termAt(i){ return displayTerms()[i] || {courses:[]}; }
+function termCourses(){ return termAt(trackingIdx()).courses; }
+
+function pacedCodes(){ return customSet ? customSet.slice() : termCourses(); }
+function credentialCodes(){ return flatCourses(cred()); }
+function hasCustom(){ return customSet !== null; }
+
+function zoneOf(i, m){
+  if(m.required != null && i <= m.required) return "required";
+  if(m.target   != null && i <= m.target)   return "recommended";
+  return "remaining";
+}
+/* Fraction of the term elapsed between the pacing anchor and the drop date.
+   Clamped to [0,1] so the "expected by today" marker never leaves the track. */
+function elapsedFraction(){
+  const now = new Date();
+  const total = Math.max(DROP_DATE - PACE_START, 1);
+  return Math.min(1, Math.max(0, (now - PACE_START) / total));
+}
+
+/* The single source of truth for how a student is doing.
+   Time-aware: "on pace" means you've done the share of the Nov. 20 requirement
+   that today's date calls for, NOT that you've already hit the full requirement.
+   States, worst → best: risk, behind, met, ontrack, ahead, complete.           */
+function statusOf(code){
+  const m = COURSE_META[code], d = done[code];
+  if(!m || m.total == null) return null;
+  if(d >= m.total) return {cls:"s-complete", label:"Complete", key:"complete"};
+
+  if(m.required == null) return {cls:"count", label:`${d} of ${m.total} done`, key:"count"};
+
+  const req = m.required;
+  if(d >= req) return {cls:"s-met", label:"Requirement met", key:"met"};
+
+  const expected = req * elapsedFraction();
+  const gap = d - expected;
+
+  const rec = m.target != null ? Math.max(m.target, req) : null;
+  if(rec != null && d >= rec) return {cls:"s-ahead", label:"Ahead of pace", key:"ahead"};
+
+  if(gap >= 1)      return {cls:"s-ahead",   label:"Ahead of pace",   key:"ahead"};
+  if(gap >= -0.5)   return {cls:"s-ontrack", label:"On pace",         key:"ontrack"};
+  if(gap >= -1.5)   return {cls:"s-behind",  label:"Slightly behind", key:"behind"};
+  return {cls:"s-risk", label:"Falling behind", key:"risk"};
+}
+
+/* Detail line shown under each course's pace track. */
+function paceNoteOf(code){
+  const m = COURSE_META[code], d = done[code];
+  if(!m || m.total == null || m.required == null) return null;
+  const req = m.required;
+  const expected = req * elapsedFraction();
+  const gap = d - expected;
+
+  if(d >= m.total) return {key:"complete", text:`Course complete — all ${m.total} modules done.`};
+  if(d >= req) return {key:"met", text:`Nov. 20 requirement met (${req} modules). Keep going for the full course.`};
+  if(gap >= 1) return {key:"ahead", text:`Ahead of today's line — keep it up.`};
+  if(gap >= -0.5) return {key:"ontrack", text:`On pace — you're where you should be by today.`};
+  if(gap >= -1.5) return {key:"behind", text:`Slightly behind — next up: module ${d + 1}.`};
+  const need = Math.max(1, Math.round(expected - d));
+  return {key:"risk", text:`Falling behind — about ${need} module${need===1?"":"s"} below today's line.`};
+}
+
+function daysToDrop(){ return Math.max(0, Math.ceil((DROP_DATE - new Date()) / 86400000)); }
+function weeksBetween(a,b){ return (b - a) / 604800000; }
+
+function statsFor(codes){
+  let reqTotal=0, reqDone=0, recTotal=0, remTotal=0, allTotal=0;
+  codes.forEach(code => {
+    const m = COURSE_META[code]; if(!m || m.total == null) return;
+    const r = m.required != null ? m.required : 0;
+    const t = m.target != null ? Math.max(m.target, r) : r;
+    reqTotal += r; reqDone += Math.min(done[code], r);
+    recTotal += (t - r); remTotal += (m.total - t); allTotal += m.total;
+  });
+  return {reqTotal, reqDone, recTotal, remTotal, allTotal};
+}
+
+function paceInfo(){
+  const {reqTotal, reqDone} = statsFor(pacedCodes());
+  const now = new Date();
+  const totalWeeks = Math.max(weeksBetween(PACE_START, DROP_DATE), 0.1);
+  const weeksLeft  = Math.max(weeksBetween(now, DROP_DATE), 0);
+  const remaining  = Math.max(reqTotal - reqDone, 0);
+  const pace       = weeksLeft > 0 ? remaining / weeksLeft : remaining;
+  const baseline   = reqTotal / totalWeeks;
+  let st = "ok", label = "On pace";
+  if(reqTotal === 0){ label = "Targets TBD"; }
+  else if(remaining <= 0){ label = "Cleared"; }
+  else if(pace > baseline + 0.05){ st = "bad"; label = "Behind pace"; }
+  return {pace, weeksLeft, remaining, reqTotal, baseline, state:st, label};
+}
+
+function fmtPace(x){ const r = Math.round(x*10)/10; return r.toString().replace(/\.0$/,""); }
+
+function scopeLabel(){
+  const codes = pacedCodes();
+  if(hasCustom()) return `Custom set (${codes.length} course${codes.length===1?"":"s"})`;
+  return `${unitWord()} ${state.trackTerm} (${codes.length} course${codes.length===1?"":"s"})`;
+}
+
+function planSummary(){
+  const c = cred();
+  const track = hasCustom() ? "Custom courses" : `${unitWord()} ${state.trackTerm}`;
+  return `${c.short} · ${state.intensity==="ft"?"Full-time":"Part-time"} · ${track}`;
+}
+
+function renderMeta(){
+  clampTerm();
+  const c = cred();
+  const p = paceInfo();
+  let paceCls = p.state==="ok" ? "ok" : "bad";
+  let paceHtml;
+  if(p.label === "Targets TBD"){
+    paceHtml = `<span class="pp-label">Targets TBD</span>`;
+    paceCls = "ok";
+  } else if(p.remaining <= 0){
+    paceHtml = `<span class="pp-label">Cleared</span><span class="pp-num">· nothing required left</span>`;
+  } else {
+    paceHtml = `<span class="pp-label">${p.label}</span><span class="pp-num">· ≈${fmtPace(p.pace)} mod/wk</span>`;
+  }
+  document.getElementById("metaRow").innerHTML = `
+    <div class="chip countdown">
+      <div class="k">Drop date</div>
+      <div class="v">Nov 20, 2026 <small>· ${Math.round(p.weeksLeft)} weeks out</small></div>
+      <div class="chip-pace ${paceCls}"><span class="dotp"></span>${paceHtml}</div>
+    </div>
+    <div class="chip"><div class="k">Plan</div><div class="v">${c.short} <small>· ${c.months} mo</small></div></div>
+    <div class="chip"><div class="k">Tracking</div><div class="v">${hasCustom()?"Custom":unitWord()+" "+state.trackTerm}</div></div>
+  `;
+}
+
+function renderPlan(){
+  clampTerm();
+  const summary = `
+    <div class="plan-summary">
+      <div class="plan-summary-main">
+        <p class="plan-title">Your plan</p>
+        <div class="plan-chosen">${planSummary()} <b>· change below</b></div>
+      </div>
+      <button class="plan-change" id="planToggle">${state.planOpen?"Done":"Change"}</button>
+    </div>`;
+
+  if(!state.planOpen){ document.getElementById("plan").innerHTML = summary; bindPlan(); return; }
+
+  const credBtns = CRED_ORDER.map(k =>
+    `<button data-cred="${k}" class="${state.cred===k?"active":""}">${CREDENTIALS[k].short}</button>`).join("");
+  const intBtns = [["ft","Full-time"],["pt","Part-time"]].map(([k,l]) =>
+    `<button data-int="${k}" class="${state.intensity===k?"active":""}">${l}</button>`).join("");
+  const termBtns = Array.from({length:termCount()}, (_,i) =>
+    `<button data-term="${i+1}" class="${(!hasCustom() && state.trackTerm===i+1)?"active":""}">${unitWord()} ${i+1}</button>`).join("");
+
+  const note = state.intensity==="pt"
+    ? "Part-time sequences are derived at ~2 courses per term; confirm the official map with advising."
+    : "Full-time uses the college's published term sequence for the selected credential.";
+
+  let panel = "";
+  if(state.customOpen){
+    const terms = displayTerms();
+    const rows = terms.map((t,ti) => {
+      const checks = t.courses.map(code => {
+        const m = COURSE_META[code];
+        const label = m ? `${code} — ${m.title}` : code;
+        const checked = (pacedCodes().indexOf(code)!==-1) ? "checked" : "";
+        return `<label class="custom-row"><input type="checkbox" data-code="${code}" ${checked}>${label}</label>`;
+      }).join("");
+      return `<div class="custom-term">${unitWord()} ${ti+1}</div><div class="custom-grid">${checks}</div>`;
+    }).join("");
+    panel = `<div class="custom-panel">
+      <p class="custom-hint">Pre-filled with your tracking term. Check or uncheck the exact courses you're enrolled in — the paced roll-up follows your selection.</p>
+      ${rows}
+      <div class="custom-actions">
+        <button class="custom-apply" id="customReset">Reset to ${unitWord()} ${state.trackTerm}</button>
+        <span class="custom-count">${pacedCodes().length} course${pacedCodes().length===1?"":"s"} selected</span>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById("plan").innerHTML = summary + `
+    <div class="plan-body">
+      <p class="plan-sub">Choose a credential, intensity, and the term you're tracking. The paced roll-up, credential context, and board all follow your selection.</p>
+      <div class="plan-row">
+        <div class="plan-group"><span class="plan-lbl">Credential</span><div class="seg">${credBtns}</div></div>
+        <div class="plan-group"><span class="plan-lbl">Intensity</span><div class="seg">${intBtns}</div></div>
+        <div class="plan-group"><span class="plan-lbl">Tracking term</span><div class="seg">${termBtns}</div></div>
+      </div>
+      <span class="custom-link" id="customToggle">${state.customOpen?"Hide course customizer":"Customize courses…"}</span>
+      ${panel}
+      <p class="plan-note">${note}</p>
+    </div>`;
+  bindPlan();
+}
+
+function bindPlan(){
+  const pt = document.getElementById("planToggle");
+  if(pt) pt.onclick = () => { state.planOpen = !state.planOpen; renderPlan(); };
+  if(!state.planOpen) return;
+
+  document.getElementById("plan").querySelectorAll("button[data-cred],button[data-int],button[data-term]").forEach(b => {
+    b.onclick = () => {
+      if(b.dataset.cred){ state.cred = b.dataset.cred; customSet = null; state.trackTerm = 1; state.customOpen = false; }
+      if(b.dataset.int){ state.intensity = b.dataset.int; customSet = null; state.trackTerm = 1; state.customOpen = false; }
+      if(b.dataset.term){ state.trackTerm = +b.dataset.term; customSet = null; }
+      renderAll();
+    };
+  });
+  const ct = document.getElementById("customToggle");
+  if(ct) ct.onclick = () => {
+    state.customOpen = !state.customOpen;
+    if(state.customOpen && !hasCustom()) customSet = termCourses().slice();
+    renderPlan(); renderRollup(); renderBoard(); renderMeta();
+  };
+  const cr = document.getElementById("customReset");
+  if(cr) cr.onclick = () => { customSet = null; renderAll(); };
+  document.getElementById("plan").querySelectorAll("input[data-code]").forEach(inp => {
+    inp.onchange = () => {
+      if(!hasCustom()) customSet = termCourses().slice();
+      const code = inp.dataset.code;
+      if(inp.checked){ if(customSet.indexOf(code)===-1) customSet.push(code); }
+      else { customSet = customSet.filter(x => x !== code); }
+      renderAll();
+    };
+  });
+}
+
+function barSegs(s){
+  const pct = n => s.allTotal ? (n / s.allTotal * 100) : 0;
+  return `
+    <div class="bseg req-done" style="width:${pct(s.reqDone)}%"></div>
+    <div class="bseg req-todo" style="width:${pct(s.reqTotal - s.reqDone)}%"></div>
+    <div class="bseg rec" style="width:${pct(s.recTotal)}%"></div>
+    <div class="bseg rem" style="width:${pct(s.remTotal)}%"></div>
+    <div class="threshold" style="left:calc(${pct(s.reqTotal)}% - 1px)"></div>`;
+}
+
+function renderRollup(){
+  const codes = pacedCodes();
+  const s = statsFor(codes);
+  const c = cred();
+
+  const cs = statsFor(credentialCodes());
+  const csPct = cs.reqTotal ? Math.round(cs.reqDone / cs.reqTotal * 100) : 0;
+  const ctx = cs.allTotal ? `
+    <div class="ctx-line">
+      <div class="ctx-top">
+        <span class="ctx-label">Whole credential<span class="ctx-tag">context only</span></span>
+        <span class="ctx-num"><b>${cs.reqDone}</b> / ${cs.reqTotal} required · ${csPct}%</span>
+      </div>
+      <div class="bar bar-sm" role="img" aria-label="${cs.reqDone} of ${cs.reqTotal} credential required modules complete">${barSegs(cs)}</div>
+    </div>` : "";
+
+  document.getElementById("rollup").innerHTML = `
+    <div class="rollup-top">
+      <div>
+        <div class="rollup-title">Progress to Nov. 20, 2026 · ${scopeLabel()}</div>
+        <div class="rollup-sub">${s.reqDone} of ${s.reqTotal} required modules complete · ${c.label}</div>
+      </div>
+      <div class="rollup-num"><b>${s.reqDone}</b> / ${s.reqTotal} <small>required done</small></div>
+    </div>
+    <div class="bar" role="img" aria-label="${s.reqDone} of ${s.reqTotal} required modules complete">${barSegs(s)}</div>
+    <div class="rollup-legend">
+      <span><i class="dot req-done"></i>Required · done</span>
+      <span><i class="dot req-todo"></i>Required · remaining</span>
+      <span><i class="dot rec"></i>Recommended</span>
+      <span><i class="dot rem"></i>Rest of course</span>
+      <span><i class="tick"></i>Nov. 20 line</span>
+    </div>
+    ${ctx}
+  `;
+}
+
+function courseCard(code, optional){
+  const m = COURSE_META[code];
+  if(!m){
+    return `<div class="course opt">
+      <div class="c-top"><div><div class="c-name">${code}</div><div class="c-caption">General education / elective</div></div>
+      <span class="status count">No module map</span></div>
+      <div class="tbd-note">This course has no Canvas module breakdown in the current data — track it outside this view.</div></div>`;
+  }
+  if(m.total == null){
+    return `<div class="course opt">
+      <div class="c-top"><div><div class="c-name">${code} <span class="title">${m.title}</span></div><div class="c-caption">${unitWord()} course</div></div>
+      <span class="status count">Not yet mapped</span></div>
+      <div class="tbd-note">Module breakdown and drop-date targets are still being determined for this course.</div></div>`;
+  }
+  const st = statusOf(code);
+  let cells = "";
+  for(let i=1;i<=m.total;i++){
+    const z = zoneOf(i,m);
+    const isDone = i <= done[code];
+    cells += `<div class="cell ${isDone?"done":""}" data-zone="${z}" data-code="${code}" data-i="${i}"><span class="num">${i}</span></div>`;
+  }
+  const rec = m.target > m.required ? ` · recommended ${m.target}` : "";
+  const caption = `${m.total} modules · required by Nov 20: ${m.required}${rec}`;
+  const statusHtml = `<span class="status ${st.cls}">${st.label}${m.required!=null?` · ${done[code]}/${m.total}`:""}</span>`;
+
+  // Pace track: shows progress toward the Nov. 20 requirement vs today's line.
+  const req = m.required;
+  const exp = Math.min(1, Math.max(0, elapsedFraction()));
+  const donePct = Math.min(100, (done[code] / req) * 100);
+  const expPct = Math.min(100, exp * 100);
+  const note = paceNoteOf(code);
+  const trackHtml = `
+    <div class="paceline">
+      <div class="pacebar">
+        <div class="pacebar-done" style="width:${donePct}%"></div>
+        <div class="pacebar-exp" style="left:${expPct}%"></div>
+      </div>
+      <div class="pace-cap">
+        <span>Nov. 20 target: ${req} module${req===1?"":"s"}</span>
+        <span class="pc-right">${done[code]} done · should be ≈${Math.floor(req*exp)} by today</span>
+      </div>
+      ${note?`<div class="pace-note ${note.key}">${note.text}</div>`:""}
+    </div>`;
+
+  return `<div class="course${optional?" opt":""}">
+    <div class="c-top">
+      <div><div class="c-name">${code} <span class="title">${m.title}</span></div><div class="c-caption">${caption}${optional?" · choose one":""}</div></div>
+      ${statusHtml}
+    </div>
+    <div class="cells">${cells}</div>
+    ${trackHtml}
+  </div>`;
+}
+
+function renderBoard(){
+  clampTerm();
+  const terms = displayTerms();
+  const label = n => `${unitWord()} ${n}`;
+  const ti = trackingIdx();
+  const tracked = pacedCodes();
+
+  let html, toggle, cls = "";
+
+  if(state.boardAll){
+    html = terms.map((t,idx) => {
+      const num = idx + 1;
+      const tag = idx === ti ? `<span class="tag cur-tag">Current</span>`
+                : idx < ti   ? `<span class="tag prior-tag">Prior</span>`
+                :              `<span class="tag up-tag">Upcoming</span>`;
+      const cards = t.courses.map(c => courseCard(c, false)).join("");
+      const optGroups = (t.options||[]).filter(g => g.some(c => COURSE_META[c]));
+      const optHtml = optGroups.length
+        ? `<div class="sem-head" style="margin-top:16px">${label(num)} electives · choose one</div>` +
+          optGroups.map(g => g.map(c => courseCard(c, true)).join("")).join("")
+        : "";
+      return `<div class="sem-group"><h2 class="sem-head">${label(num)}${tag}</h2>${cards}${optHtml}</div>`;
+    }).join("");
+    toggle = `Showing all ${terms.length} terms · <button id="boardToggle">Show tracking scope only</button>`;
+  } else {
+    cls = "board-focus";
+    const codes = tracked.slice();
+    const ordered = [];
+    terms.forEach(t => {
+      t.courses.forEach(c => { if(codes.indexOf(c)!==-1) ordered.push({code:c, optional:false}); });
+      (t.options||[]).forEach(g => g.forEach(c => { if(codes.indexOf(c)!==-1) ordered.push({code:c, optional:true}); }));
+    });
+    const cards = ordered.length
+      ? ordered.map(o => courseCard(o.code, o.optional)).join("")
+      : `<div class="course opt"><div class="tbd-note">No courses selected. Open “Change” above and use “Customize courses” to add the courses you're taking.</div></div>`;
+    const scopeName = hasCustom() ? "Your custom course set" : `${label(state.trackTerm)} · tracking scope`;
+    html = `<div class="sem-group"><h2 class="sem-head">${scopeName}<span class="tag cur-tag">Focus</span></h2>${cards}</div>`;
+    toggle = terms.length > 1 ? `Focused on your tracking scope · <button id="boardToggle">Show full plan (${terms.length} terms)</button>` : "";
+  }
+
+  const board = document.getElementById("board");
+  board.className = cls;
+  board.innerHTML = html;
+  board.querySelectorAll(".cell").forEach(cell => {
+    cell.onclick = () => {
+      const code = cell.dataset.code, i = +cell.dataset.i;
+      done[code] = (done[code] === i) ? i-1 : i;
+      renderBoard(); renderRollup(); renderMeta();
+    };
+  });
+
+  const host = document.getElementById("boardToggleHost");
+  if(host){ host.innerHTML = toggle ? `<p class="board-toggle">${toggle}</p>` : ""; }
+  const tb = document.getElementById("boardToggle");
+  if(tb) tb.onclick = () => { state.boardAll = !state.boardAll; renderBoard(); };
+}
+
+function renderAll(){ renderMeta(); renderPlan(); renderRollup(); renderBoard(); }
+
+document.getElementById("resetBtn").onclick = () => {
+  Object.keys(done).forEach(c => done[c] = 0);
+  renderAll();
+};
+
+renderAll();
+setInterval(() => { renderMeta(); renderRollup(); }, 60000);
+</script>
+</body>
+</html>

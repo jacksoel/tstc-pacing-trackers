@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>/*__TITLE__*/</title>
+<meta property="og:title" content="/*__TITLE__*/">
+<style>
+/*__THEME__*/
+</style>
+<meta property="og:title" content="/*__TITLE__*/"><meta property="og:title" content="/*__TITLE__*/"></head>
+<body>
+<div class="brandbar"><div class="brandbar-in"><span class="brandbar-mark">/*__MARK__*/</span><span class="brandbar-name">/*__ORG__*/</span><span class="brandbar-right">/*__PROGRAM_NAME__*/</span></div></div><div class="wrap">
+  <header>
+    <p class="eyebrow">/*__EYEBROW__*/</p>
+    <h1>Are you on pace for the drop date?</h1>
+    <p class="sub">/*__SUBTITLE__*/</p>
+    <div class="meta-row" id="metaRow"></div>
+  </header>
+
+  <div class="plan" id="plan"></div>
+  <div class="rollup" id="rollup"></div>
+
+  <div class="controls"><button class="reset" id="resetBtn">Reset all progress</button></div>
+
+  <div class="legend">
+    <span class="item"><span class="swatch sw-req"></span> Required by Nov. 20</span>
+    <span class="item"><span class="swatch sw-rec"></span> Recommended pace</span>
+    <span class="item"><span class="swatch sw-rem"></span> Rest of course</span>
+    <span class="item"><span class="swatch sw-done"></span> You've completed</span>
+  </div>
+
+  <div id="board"></div>
+  <div id="boardToggleHost"></div>
+
+  <p class="hint">Tap any module to mark it done. Your progress stays in this view only — nothing is saved to the sheet.</p>
+  <p class="managed-by">Managed by <a href="/*__MANAGED_URL__*/" target="_blank" rel="noopener noreferrer">/*__MANAGED_LABEL__*/</a></p>
+</div>
+
+<script>
+const COURSE_META = /*__COURSE_META__*/;
+
+const CREDENTIALS = /*__CREDENTIALS__*/;
+
+const CRED_ORDER = /*__CRED_ORDER__*/;
+
+const done = {};
+Object.keys(COURSE_META).forEach(c => done[c] = 0);
+
+let state = { cred:"aas", intensity:"ft", trackTerm:1, customOpen:false, boardAll:false, planOpen:false };
+let customSet = null;
+
+const PACE_START = /*__PACE_START__*/;
+const DROP_DATE  = /*__DROP_DATE__*/;
+const PT_PER_TERM = /*__PT_PER_TERM__*/;
+
+function cred(){ return CREDENTIALS[state.cred]; }
+function unitWord(){ return cred().unit || "Term"; }
+
+function flatCourses(c){
+  const out = [];
+  c.terms.forEach(t => t.courses.forEach(code => out.push(code)));
+  return out;
+}
+
+function displayTerms(){
+  const c = cred();
+  if(state.intensity === "ft") return c.terms;
+  const terms = [];
+  const req = flatCourses(c);
+  for(let i=0;i<req.length;i+=PT_PER_TERM){
+    const t = {courses:req.slice(i,i+PT_PER_TERM)};
+    if(i + PT_PER_TERM >= req.length && c.options) t.options = c.options;
+    terms.push(t);
+  }
+  return terms;
+}
+
+function termCount(){ return displayTerms().length; }
+function clampTerm(){ const n = termCount(); if(state.trackTerm > n) state.trackTerm = n; if(state.trackTerm < 1) state.trackTerm = 1; }
+function trackingIdx(){ return state.trackTerm - 1; }
+function termAt(i){ return displayTerms()[i] || {courses:[]}; }
+function termCourses(){ return termAt(trackingIdx()).courses; }
+
+function pacedCodes(){ return customSet ? customSet.slice() : termCourses(); }
+function credentialCodes(){ return flatCourses(cred()); }
+function hasCustom(){ return customSet !== null; }
+
+function zoneOf(i, m){
+  if(m.required != null && i <= m.required) return "required";
+  if(m.target   != null && i <= m.target)   return "recommended";
+  return "remaining";
+}
+/* Fraction of the term elapsed between the pacing anchor and the drop date.
+   Clamped to [0,1] so the "expected by today" marker never leaves the track. */
+function elapsedFraction(){
+  const now = new Date();
+  const total = Math.max(DROP_DATE - PACE_START, 1);
+  return Math.min(1, Math.max(0, (now - PACE_START) / total));
+}
+
+/* The single source of truth for how a student is doing.
+   Time-aware: "on pace" means you've done the share of the Nov. 20 requirement
+   that today's date calls for, NOT that you've already hit the full requirement.
+   States, worst → best: risk, behind, met, ontrack, ahead, complete.           */
+function statusOf(code){
+  const m = COURSE_META[code], d = done[code];
+  if(!m || m.total == null) return null;
+  if(d >= m.total) return {cls:"s-complete", label:"Complete", key:"complete"};
+
+  if(m.required == null) return {cls:"count", label:`${d} of ${m.total} done`, key:"count"};
+
+  const req = m.required;
+  if(d >= req) return {cls:"s-met", label:"Requirement met", key:"met"};
+
+  const expected = req * elapsedFraction();
+  const gap = d - expected;
+
+  const rec = m.target != null ? Math.max(m.target, req) : null;
+  if(rec != null && d >= rec) return {cls:"s-ahead", label:"Ahead of pace", key:"ahead"};
+
+  if(gap >= 1)      return {cls:"s-ahead",   label:"Ahead of pace",   key:"ahead"};
+  if(gap >= -0.5)   return {cls:"s-ontrack", label:"On pace",         key:"ontrack"};
+  if(gap >= -1.5)   return {cls:"s-behind",  label:"Slightly behind", key:"behind"};
+  return {cls:"s-risk", label:"Falling behind", key:"risk"};
+}
+
+/* Detail line shown under each course's pace track. */
+function paceNoteOf(code){
+  const m = COURSE_META[code], d = done[code];
+  if(!m || m.total == null || m.required == null) return null;
+  const req = m.required;
+  const expected = req * elapsedFraction();
+  const gap = d - expected;
+
+  if(d >= m.total) return {key:"complete", text:`Course complete — all ${m.total} modules done.`};
+  if(d >= req) return {key:"met", text:`Nov. 20 requirement met (${req} modules). Keep going for the full course.`};
+  if(gap >= 1) return {key:"ahead", text:`Ahead of today's line — keep it up.`};
+  if(gap >= -0.5) return {key:"ontrack", text:`On pace — you're where you should be by today.`};
+  if(gap >= -1.5) return {key:"behind", text:`Slightly behind — next up: module ${d + 1}.`};
+  const need = Math.max(1, Math.round(expected - d));
+  return {key:"risk", text:`Falling behind — about ${need} module${need===1?"":"s"} below today's line.`};
+}
+
+function daysToDrop(){ return Math.max(0, Math.ceil((DROP_DATE - new Date()) / 86400000)); }
+function weeksBetween(a,b){ return (b - a) / 604800000; }
+
+function statsFor(codes){
+  let reqTotal=0, reqDone=0, recTotal=0, remTotal=0, allTotal=0;
+  codes.forEach(code => {
+    const m = COURSE_META[code]; if(!m || m.total == null) return;
+    const r = m.required != null ? m.required : 0;
+    const t = m.target != null ? Math.max(m.target, r) : r;
+    reqTotal += r; reqDone += Math.min(done[code], r);
+    recTotal += (t - r); remTotal += (m.total - t); allTotal += m.total;
+  });
+  return {reqTotal, reqDone, recTotal, remTotal, allTotal};
+}
+
+function paceInfo(){
+  const {reqTotal, reqDone} = statsFor(pacedCodes());
+  const now = new Date();
+  const totalWeeks = Math.max(weeksBetween(PACE_START, DROP_DATE), 0.1);
+  const weeksLeft  = Math.max(weeksBetween(now, DROP_DATE), 0);
+  const remaining  = Math.max(reqTotal - reqDone, 0);
+  const pace       = weeksLeft > 0 ? remaining / weeksLeft : remaining;
+  const baseline   = reqTotal / totalWeeks;
+  let st = "ok", label = "On pace";
+  if(reqTotal === 0){ label = "Targets TBD"; }
+  else if(remaining <= 0){ label = "Cleared"; }
+  else if(pace > baseline + 0.05){ st = "bad"; label = "Behind pace"; }
+  return {pace, weeksLeft, remaining, reqTotal, baseline, state:st, label};
+}
+
+function fmtPace(x){ const r = Math.round(x*10)/10; return r.toString().replace(/\.0$/,""); }
+
+function scopeLabel(){
+  const codes = pacedCodes();
+  if(hasCustom()) return `Custom set (${codes.length} course${codes.length===1?"":"s"})`;
+  return `${unitWord()} ${state.trackTerm} (${codes.length} course${codes.length===1?"":"s"})`;
+}
+
+function planSummary(){
+  const c = cred();
+  const track = hasCustom() ? "Custom courses" : `${unitWord()} ${state.trackTerm}`;
+  return `${c.short} · ${state.intensity==="ft"?"Full-time":"Part-time"} · ${track}`;
+}
+
+function renderMeta(){
+  clampTerm();
+  const c = cred();
+  const p = paceInfo();
+  let paceCls = p.state==="ok" ? "ok" : "bad";
+  let paceHtml;
+  if(p.label === "Targets TBD"){
+    paceHtml = `<span class="pp-label">Targets TBD</span>`;
+    paceCls = "ok";
+  } else if(p.remaining <= 0){
+    paceHtml = `<span class="pp-label">Cleared</span><span class="pp-num">· nothing required left</span>`;
+  } else {
+    paceHtml = `<span class="pp-label">${p.label}</span><span class="pp-num">· ≈${fmtPace(p.pace)} mod/wk</span>`;
+  }
+  document.getElementById("metaRow").innerHTML = `
+    <div class="chip countdown">
+      <div class="k">Drop date</div>
+      <div class="v">Nov 20, 2026 <small>· ${Math.round(p.weeksLeft)} weeks out</small></div>
+      <div class="chip-pace ${paceCls}"><span class="dotp"></span>${paceHtml}</div>
+    </div>
+    <div class="chip"><div class="k">Plan</div><div class="v">${c.short} <small>· ${c.months} mo</small></div></div>
+    <div class="chip"><div class="k">Tracking</div><div class="v">${hasCustom()?"Custom":unitWord()+" "+state.trackTerm}</div></div>
+  `;
+}
+
+function renderPlan(){
+  clampTerm();
+  const summary = `
+    <div class="plan-summary">
+      <div class="plan-summary-main">
+        <p class="plan-title">Your plan</p>
+        <div class="plan-chosen">${planSummary()} <b>· change below</b></div>
+      </div>
+      <button class="plan-change" id="planToggle">${state.planOpen?"Done":"Change"}</button>
+    </div>`;
+
+  if(!state.planOpen){ document.getElementById("plan").innerHTML = summary; bindPlan(); return; }
+
+  const credBtns = CRED_ORDER.map(k =>
+    `<button data-cred="${k}" class="${state.cred===k?"active":""}">${CREDENTIALS[k].short}</button>`).join("");
+  const intBtns = [["ft","Full-time"],["pt","Part-time"]].map(([k,l]) =>
+    `<button data-int="${k}" class="${state.intensity===k?"active":""}">${l}</button>`).join("");
+  const termBtns = Array.from({length:termCount()}, (_,i) =>
+    `<button data-term="${i+1}" class="${(!hasCustom() && state.trackTerm===i+1)?"active":""}">${unitWord()} ${i+1}</button>`).join("");
+
+  const note = state.intensity==="pt"
+    ? "Part-time sequences are derived at ~2 courses per term; confirm the official map with advising."
+    : "Full-time uses the college's published term sequence for the selected credential.";
+
+  let panel = "";
+  if(state.customOpen){
+    const terms = displayTerms();
+    const rows = terms.map((t,ti) => {
+      const checks = t.courses.map(code => {
+        const m = COURSE_META[code];
+        const label = m ? `${code} — ${m.title}` : code;
+        const checked = (pacedCodes().indexOf(code)!==-1) ? "checked" : "";
+        return `<label class="custom-row"><input type="checkbox" data-code="${code}" ${checked}>${label}</label>`;
+      }).join("");
+      return `<div class="custom-term">${unitWord()} ${ti+1}</div><div class="custom-grid">${checks}</div>`;
+    }).join("");
+    panel = `<div class="custom-panel">
+      <p class="custom-hint">Pre-filled with your tracking term. Check or uncheck the exact courses you're enrolled in — the paced roll-up follows your selection.</p>
+      ${rows}
+      <div class="custom-actions">
+        <button class="custom-apply" id="customReset">Reset to ${unitWord()} ${state.trackTerm}</button>
+        <span class="custom-count">${pacedCodes().length} course${pacedCodes().length===1?"":"s"} selected</span>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById("plan").innerHTML = summary + `
+    <div class="plan-body">
+      <p class="plan-sub">Choose a credential, intensity, and the term you're tracking. The paced roll-up, credential context, and board all follow your selection.</p>
+      <div class="plan-row">
+        <div class="plan-group"><span class="plan-lbl">Credential</span><div class="seg">${credBtns}</div></div>
+        <div class="plan-group"><span class="plan-lbl">Intensity</span><div class="seg">${intBtns}</div></div>
+        <div class="plan-group"><span class="plan-lbl">Tracking term</span><div class="seg">${termBtns}</div></div>
+      </div>
+      <span class="custom-link" id="customToggle">${state.customOpen?"Hide course customizer":"Customize courses…"}</span>
+      ${panel}
+      <p class="plan-note">${note}</p>
+    </div>`;
+  bindPlan();
+}
+
+function bindPlan(){
+  const pt = document.getElementById("planToggle");
+  if(pt) pt.onclick = () => { state.planOpen = !state.planOpen; renderPlan(); };
+  if(!state.planOpen) return;
+
+  document.getElementById("plan").querySelectorAll("button[data-cred],button[data-int],button[data-term]").forEach(b => {
+    b.onclick = () => {
+      if(b.dataset.cred){ state.cred = b.dataset.cred; customSet = null; state.trackTerm = 1; state.customOpen = false; }
+      if(b.dataset.int){ state.intensity = b.dataset.int; customSet = null; state.trackTerm = 1; state.customOpen = false; }
+      if(b.dataset.term){ state.trackTerm = +b.dataset.term; customSet = null; }
+      renderAll();
+    };
+  });
+  const ct = document.getElementById("customToggle");
+  if(ct) ct.onclick = () => {
+    state.customOpen = !state.customOpen;
+    if(state.customOpen && !hasCustom()) customSet = termCourses().slice();
+    renderPlan(); renderRollup(); renderBoard(); renderMeta();
+  };
+  const cr = document.getElementById("customReset");
+  if(cr) cr.onclick = () => { customSet = null; renderAll(); };
+  document.getElementById("plan").querySelectorAll("input[data-code]").forEach(inp => {
+    inp.onchange = () => {
+      if(!hasCustom()) customSet = termCourses().slice();
+      const code = inp.dataset.code;
+      if(inp.checked){ if(customSet.indexOf(code)===-1) customSet.push(code); }
+      else { customSet = customSet.filter(x => x !== code); }
+      renderAll();
+    };
+  });
+}
+
+function barSegs(s){
+  const pct = n => s.allTotal ? (n / s.allTotal * 100) : 0;
+  return `
+    <div class="bseg req-done" style="width:${pct(s.reqDone)}%"></div>
+    <div class="bseg req-todo" style="width:${pct(s.reqTotal - s.reqDone)}%"></div>
+    <div class="bseg rec" style="width:${pct(s.recTotal)}%"></div>
+    <div class="bseg rem" style="width:${pct(s.remTotal)}%"></div>
+    <div class="threshold" style="left:calc(${pct(s.reqTotal)}% - 1px)"></div>`;
+}
+
+function renderRollup(){
+  const codes = pacedCodes();
+  const s = statsFor(codes);
+  const c = cred();
+
+  const cs = statsFor(credentialCodes());
+  const csPct = cs.reqTotal ? Math.round(cs.reqDone / cs.reqTotal * 100) : 0;
+  const ctx = cs.allTotal ? `
+    <div class="ctx-line">
+      <div class="ctx-top">
+        <span class="ctx-label">Whole credential<span class="ctx-tag">context only</span></span>
+        <span class="ctx-num"><b>${cs.reqDone}</b> / ${cs.reqTotal} required · ${csPct}%</span>
+      </div>
+      <div class="bar bar-sm" role="img" aria-label="${cs.reqDone} of ${cs.reqTotal} credential required modules complete">${barSegs(cs)}</div>
+    </div>` : "";
+
+  document.getElementById("rollup").innerHTML = `
+    <div class="rollup-top">
+      <div>
+        <div class="rollup-title">Progress to Nov. 20, 2026 · ${scopeLabel()}</div>
+        <div class="rollup-sub">${s.reqDone} of ${s.reqTotal} required modules complete · ${c.label}</div>
+      </div>
+      <div class="rollup-num"><b>${s.reqDone}</b> / ${s.reqTotal} <small>required done</small></div>
+    </div>
+    <div class="bar" role="img" aria-label="${s.reqDone} of ${s.reqTotal} required modules complete">${barSegs(s)}</div>
+    <div class="rollup-legend">
+      <span><i class="dot req-done"></i>Required · done</span>
+      <span><i class="dot req-todo"></i>Required · remaining</span>
+      <span><i class="dot rec"></i>Recommended</span>
+      <span><i class="dot rem"></i>Rest of course</span>
+      <span><i class="tick"></i>Nov. 20 line</span>
+    </div>
+    ${ctx}
+  `;
+}
+
+function courseCard(code, optional){
+  const m = COURSE_META[code];
+  if(!m){
+    return `<div class="course opt">
+      <div class="c-top"><div><div class="c-name">${code}</div><div class="c-caption">General education / elective</div></div>
+      <span class="status count">No module map</span></div>
+      <div class="tbd-note">This course has no Canvas module breakdown in the current data — track it outside this view.</div></div>`;
+  }
+  if(m.total == null){
+    return `<div class="course opt">
+      <div class="c-top"><div><div class="c-name">${code} <span class="title">${m.title}</span></div><div class="c-caption">${unitWord()} course</div></div>
+      <span class="status count">Not yet mapped</span></div>
+      <div class="tbd-note">Module breakdown and drop-date targets are still being determined for this course.</div></div>`;
+  }
+  const st = statusOf(code);
+  let cells = "";
+  for(let i=1;i<=m.total;i++){
+    const z = zoneOf(i,m);
+    const isDone = i <= done[code];
+    cells += `<div class="cell ${isDone?"done":""}" data-zone="${z}" data-code="${code}" data-i="${i}"><span class="num">${i}</span></div>`;
+  }
+  const rec = m.target > m.required ? ` · recommended ${m.target}` : "";
+  const caption = `${m.total} modules · required by Nov 20: ${m.required}${rec}`;
+  const statusHtml = `<span class="status ${st.cls}">${st.label}${m.required!=null?` · ${done[code]}/${m.total}`:""}</span>`;
+
+  // Pace track: shows progress toward the Nov. 20 requirement vs today's line.
+  const req = m.required;
+  const exp = Math.min(1, Math.max(0, elapsedFraction()));
+  const donePct = Math.min(100, (done[code] / req) * 100);
+  const expPct = Math.min(100, exp * 100);
+  const note = paceNoteOf(code);
+  const trackHtml = `
+    <div class="paceline">
+      <div class="pacebar">
+        <div class="pacebar-done" style="width:${donePct}%"></div>
+        <div class="pacebar-exp" style="left:${expPct}%"></div>
+      </div>
+      <div class="pace-cap">
+        <span>Nov. 20 target: ${req} module${req===1?"":"s"}</span>
+        <span class="pc-right">${done[code]} done · should be ≈${Math.floor(req*exp)} by today</span>
+      </div>
+      ${note?`<div class="pace-note ${note.key}">${note.text}</div>`:""}
+    </div>`;
+
+  return `<div class="course${optional?" opt":""}">
+    <div class="c-top">
+      <div><div class="c-name">${code} <span class="title">${m.title}</span></div><div class="c-caption">${caption}${optional?" · choose one":""}</div></div>
+      ${statusHtml}
+    </div>
+    <div class="cells">${cells}</div>
+    ${trackHtml}
+  </div>`;
+}
+
+function renderBoard(){
+  clampTerm();
+  const terms = displayTerms();
+  const label = n => `${unitWord()} ${n}`;
+  const ti = trackingIdx();
+  const tracked = pacedCodes();
+
+  let html, toggle, cls = "";
+
+  if(state.boardAll){
+    html = terms.map((t,idx) => {
+      const num = idx + 1;
+      const tag = idx === ti ? `<span class="tag cur-tag">Current</span>`
+                : idx < ti   ? `<span class="tag prior-tag">Prior</span>`
+                :              `<span class="tag up-tag">Upcoming</span>`;
+      const cards = t.courses.map(c => courseCard(c, false)).join("");
+      const optGroups = (t.options||[]).filter(g => g.some(c => COURSE_META[c]));
+      const optHtml = optGroups.length
+        ? `<div class="sem-head" style="margin-top:16px">${label(num)} electives · choose one</div>` +
+          optGroups.map(g => g.map(c => courseCard(c, true)).join("")).join("")
+        : "";
+      return `<div class="sem-group"><h2 class="sem-head">${label(num)}${tag}</h2>${cards}${optHtml}</div>`;
+    }).join("");
+    toggle = `Showing all ${terms.length} terms · <button id="boardToggle">Show tracking scope only</button>`;
+  } else {
+    cls = "board-focus";
+    const codes = tracked.slice();
+    const ordered = [];
+    terms.forEach(t => {
+      t.courses.forEach(c => { if(codes.indexOf(c)!==-1) ordered.push({code:c, optional:false}); });
+      (t.options||[]).forEach(g => g.forEach(c => { if(codes.indexOf(c)!==-1) ordered.push({code:c, optional:true}); }));
+    });
+    const cards = ordered.length
+      ? ordered.map(o => courseCard(o.code, o.optional)).join("")
+      : `<div class="course opt"><div class="tbd-note">No courses selected. Open “Change” above and use “Customize courses” to add the courses you're taking.</div></div>`;
+    const scopeName = hasCustom() ? "Your custom course set" : `${label(state.trackTerm)} · tracking scope`;
+    html = `<div class="sem-group"><h2 class="sem-head">${scopeName}<span class="tag cur-tag">Focus</span></h2>${cards}</div>`;
+    toggle = terms.length > 1 ? `Focused on your tracking scope · <button id="boardToggle">Show full plan (${terms.length} terms)</button>` : "";
+  }
+
+  const board = document.getElementById("board");
+  board.className = cls;
+  board.innerHTML = html;
+  board.querySelectorAll(".cell").forEach(cell => {
+    cell.onclick = () => {
+      const code = cell.dataset.code, i = +cell.dataset.i;
+      done[code] = (done[code] === i) ? i-1 : i;
+      renderBoard(); renderRollup(); renderMeta();
+    };
+  });
+
+  const host = document.getElementById("boardToggleHost");
+  if(host){ host.innerHTML = toggle ? `<p class="board-toggle">${toggle}</p>` : ""; }
+  const tb = document.getElementById("boardToggle");
+  if(tb) tb.onclick = () => { state.boardAll = !state.boardAll; renderBoard(); };
+}
+
+function renderAll(){ renderMeta(); renderPlan(); renderRollup(); renderBoard(); }
+
+document.getElementById("resetBtn").onclick = () => {
+  Object.keys(done).forEach(c => done[c] = 0);
+  renderAll();
+};
+
+renderAll();
+setInterval(() => { renderMeta(); renderRollup(); }, 60000);
+</script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+{
+  "cnsa": {
+    "ITNW1308": {
+      "title": "Implementing and Supporting Client Operating Systems",
+      "total": 8,
+      "required": 5,
+      "target": 6
+    },
+    "ITNW1358": {
+      "title": "Network+",
+      "total": 5,
+      "required": 3,
+      "target": 4
+    },
+    "ITSC1325": {
+      "title": "Personal Computer Hardware",
+      "total": 5,
+      "required": 3,
+      "target": 4
+    },
+    "ITCC1314": {
+      "title": "CCNA 1: Introduction to Networks",
+      "total": 7,
+      "required": 4,
+      "target": 5
+    },
+    "ITNW1345": {
+      "title": "Implementing Network Directory Services",
+      "total": 6,
+      "required": 4,
+      "target": 5
+    },
+    "ITSC1316": {
+      "title": "Linux Installation and Configuration",
+      "total": 8,
+      "required": 5,
+      "target": 6
+    },
+    "ITCC1344": {
+      "title": "CCNA 2: Switching, Routing, and Wireless",
+      "total": 6,
+      "required": 4,
+      "target": 5
+    },
+    "ITNW1313": {
+      "title": "Computer Virtualization",
+      "total": 4,
+      "required": 3,
+      "target": 4
+    },
+    "ITSY1342": {
+      "title": "Information Technology Security",
+      "total": 5,
+      "required": 3,
+      "target": 4
+    },
+    "ITNW2354": {
+      "title": "Internet/Intranet Server",
+      "total": 4,
+      "required": 3,
+      "target": 4
+    },
+    "ITCC2320": {
+      "title": "CCNA 3: Enterprise Networking, Security, and Automation",
+      "total": 6,
+      "required": 4,
+      "target": 5
+    },
+    "ITSE1329": {
+      "title": "Programming Logic and Design",
+      "total": 5,
+      "required": 3,
+      "target": 4
+    },
+    "ITCC2343": {
+      "title": "Network Security",
+      "total": 8,
+      "required": 6,
+      "target": 7
+    },
+    "ITNW1309": {
+      "title": "Fundamentals of Cloud Computing",
+      "total": 5,
+      "required": 3,
+      "target": 4
+    },
+    "ITNW2335": {
+      "title": "Network Troubleshooting and Support",
+      "total": 5,
+      "required": 3,
+      "target": 4
+    },
+    "ITSC2370": {
+      "title": "Final Project — Systems Administration",
+      "total": 4,
+      "required": 3,
+      "target": 4
+    },
+    "ITSC2386": {
+      "title": "Internship — Computer and Information Sciences",
+      "total": 5,
+      "required": 3,
+      "target": 4
+    },
+    "ITNW2329": {
+      "title": "Application Development for The Cloud",
+      "total": 7,
+      "required": 4,
+      "target": 5
+    },
+    "ITNW1336": {
+      "title": "Cloud Deployment & Infrastructure Management",
+      "total": 7,
+      "required": 4,
+      "target": 5
+    },
+    "ITSC2325": {
+      "title": "Advanced Linux",
+      "total": 6,
+      "required": 4,
+      "target": 5
+    },
+    "ITNW2327": {
+      "title": "Advanced Cloud Concepts",
+      "total": 6,
+      "required": 4,
+      "target": 5
+    }
+  },
+  "cys": {
+    "ITNW1358": {
+      "title": "Network+",
+      "total": 5,
+      "required": 3,
+      "target": 3
+    },
+    "ITNW1308": {
+      "title": "Implementing and Supporting Client Operating Systems",
+      "total": 7,
+      "required": 3,
+      "target": 4
+    },
+    "ITSC1325": {
+      "title": "Personal Computer Hardware",
+      "total": 5,
+      "required": 3,
+      "target": 3
+    },
+    "ITSC1316": {
+      "title": "Linux Installation and Configuration",
+      "total": 8,
+      "required": null,
+      "target": null
+    },
+    "ITSY2300": {
+      "title": "Operating System Security",
+      "total": 5,
+      "required": 3,
+      "target": 3
+    },
+    "ITSY1342": {
+      "title": "Information Technology Security",
+      "total": 5,
+      "required": null,
+      "target": null
+    },
+    "ITSY1374": {
+      "title": "Secure Linux Administration",
+      "total": 6,
+      "required": 3,
+      "target": 4
+    },
+    "ITNW1354": {
+      "title": "Implementing and Supporting Servers",
+      "total": 6,
+      "required": null,
+      "target": null
+    },
+    "ITSC1342": {
+      "title": "Shell Programming",
+      "total": 5,
+      "required": 3,
+      "target": 3
+    },
+    "ITDF1300": {
+      "title": "Introduction to Digital Forensics",
+      "total": 5,
+      "required": 3,
+      "target": 4
+    },
+    "ITSY2341": {
+      "title": "Security Management Practices",
+      "total": null,
+      "required": null,
+      "target": null
+    },
+    "ITSY2345": {
+      "title": "Network Defense and Countermeasures",
+      "total": 6,
+      "required": 4,
+      "target": 5
+    },
+    "ITSY2359": {
+      "title": "Security Assessment and Auditing",
+      "total": 6,
+      "required": 3,
+      "target": 4
+    },
+    "ITSY2371": {
+      "title": "Secure Cloud Implementation",
+      "total": null,
+      "required": null,
+      "target": null
+    },
+    "ITSY2386": {
+      "title": "Internship — Computer and Information Systems Security",
+      "total": null,
+      "required": null,
+      "target": null
+    },
+    "ITSY2372": {
+      "title": "Cybersecurity Capstone",
+      "total": null,
+      "required": null,
+      "target": null
+    },
+    "ITDF2420": {
+      "title": "Digital Forensics Collection",
+      "total": null,
+      "required": null,
+      "target": null
+    },
+    "ITDF2430": {
+      "title": "Digital Forensics Analysis",
+      "total": null,
+      "required": null,
+      "target": null
+    },
+    "ITDF2425": {
+      "title": "Digital Forensics Tools",
+      "total": null,
+      "required": null,
+      "target": null
+    },
+    "ITDF2435": {
+      "title": "Comprehensive Digital Forensics Project",
+      "total": null,
+      "required": null,
+      "target": null
+    }
+  }
+}

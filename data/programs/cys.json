@@ -1,0 +1,132 @@
+{
+  "aas": {
+    "label": "Cybersecurity — Associate (AAS)",
+    "short": "AAS",
+    "award": "AAS",
+    "months": 20,
+    "unit": "Semester",
+    "terms": [
+      {
+        "courses": [
+          "ITNW1358",
+          "ITNW1308",
+          "ITSC1325"
+        ]
+      },
+      {
+        "courses": [
+          "ITSC1316",
+          "ITSY2300",
+          "ITSY1342"
+        ]
+      },
+      {
+        "courses": [
+          "ITSY1374",
+          "ITNW1354",
+          "ITSC1342"
+        ]
+      },
+      {
+        "courses": [
+          "ITDF1300",
+          "ITSY2341",
+          "ITSY2345"
+        ]
+      },
+      {
+        "courses": [
+          "ITSY2359",
+          "ITSY2371"
+        ]
+      }
+    ],
+    "options": [
+      [
+        "ITSY2386",
+        "ITSY2372"
+      ]
+    ]
+  },
+  "cer2": {
+    "label": "Cybersecurity Certificate 2",
+    "short": "Cert 2",
+    "award": "CER2",
+    "months": 16,
+    "unit": "Term",
+    "terms": [
+      {
+        "courses": [
+          "ITNW1358",
+          "ITNW1308",
+          "ITSC1325"
+        ]
+      },
+      {
+        "courses": [
+          "ITSC1316",
+          "ITSY2300",
+          "ITSY1342"
+        ]
+      },
+      {
+        "courses": [
+          "ITSY1374",
+          "ITNW1354",
+          "ITSC1342"
+        ]
+      },
+      {
+        "courses": [
+          "ITDF1300",
+          "ITSY2341",
+          "ITSY2345"
+        ]
+      }
+    ]
+  },
+  "cer1": {
+    "label": "Cybersecurity Certificate 1",
+    "short": "Cert 1",
+    "award": "CER1",
+    "months": 8,
+    "unit": "Term",
+    "terms": [
+      {
+        "courses": [
+          "ITNW1358",
+          "ITNW1308",
+          "ITSC1325"
+        ]
+      },
+      {
+        "courses": [
+          "ITSC1316",
+          "ITSY2300",
+          "ITSY1342"
+        ]
+      }
+    ]
+  },
+  "dif": {
+    "label": "Digital Forensics Specialist (ATC)",
+    "short": "Digital Forensics",
+    "award": "ATC",
+    "months": 8,
+    "unit": "Term",
+    "terms": [
+      {
+        "courses": [
+          "ITDF2420",
+          "ITDF2430"
+        ]
+      },
+      {
+        "courses": [
+          "ITDF2425",
+          "ITDF2435"
+        ]
+      }
+    ]
+  }
+}

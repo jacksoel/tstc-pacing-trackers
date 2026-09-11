@@ -1,0 +1,41 @@
+{
+  "dropDate": "2026-11-20",
+  "paceStart": "2026-09-10",
+  "ptPerTerm": 2,
+  "programs": {
+    "cnsa": {
+      "name": "Computer Networking & Systems Administration",
+      "shortName": "CNSA",
+      "eyebrow": "Computer Networking & Systems Administration · Pacing Guide",
+      "subtitle": "Every credential in the CNSA program, at full-time or part-time intensity. Pick your plan and your tracking term — the tracker paces you against the <strong>Nov. 20, 2026 drop date</strong>.",
+      "defaultCredential": "aas",
+      "credentialOrder": [
+        "aas",
+        "cer2",
+        "cer1",
+        "cloud"
+      ]
+    },
+    "cys": {
+      "name": "Cybersecurity",
+      "shortName": "CYS",
+      "eyebrow": "Cybersecurity Program · Pacing Guide",
+      "subtitle": "Every credential in the Cybersecurity program, at full-time or part-time intensity. Pick your plan and your tracking term — the tracker paces you against the <strong>Nov. 20, 2026 drop date</strong>.",
+      "defaultCredential": "aas",
+      "credentialOrder": [
+        "aas",
+        "cer2",
+        "cer1",
+        "dif"
+      ]
+    }
+  },
+  "managedBy": {
+    "label": "Eric Jackson",
+    "url": "https://contacts.thehaystackapp.com/cards/15292917"
+  },
+  "brand": {
+    "org": "Texas State Technical College",
+    "mark": "TSTC"
+  }
+}
