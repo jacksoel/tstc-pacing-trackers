@@ -1,4 +1,4 @@
-# Deploy — runs only on push to main (i.e. after a PR is merged).
+# Deploy — runs after CI succeeds on main (i.e. after a PR is merged).
 #
 # CD stage: validate, build, smoke test, then publish each program to
 # OpenArtifacts. The license key comes from GitHub Secrets and is never
@@ -6,12 +6,16 @@
 name: Deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
   workflow_dispatch: {}   # allow a manual "deploy now"
 
 jobs:
   deploy:
+    # Only deploy when the triggering CI run actually succeeded.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: production
     steps:

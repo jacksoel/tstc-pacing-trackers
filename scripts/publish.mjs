@@ -34,11 +34,11 @@ if (!existsSync(artifact)) {
   process.exit(2);
 }
 
-// Locate the OpenArtifacts wrapper. In CI it's checked out alongside the repo;
-// locally it lives in the vault's skill directory. Override with OA_WRAPPER.
+// Locate the OpenArtifacts wrapper. The repo vendors a copy in vendor/ so CI
+// does not depend on any machine-specific path. Override with OA_WRAPPER.
 const wrapper = process.env.OA_WRAPPER ||
   [
-    join(ROOT, ".openartifacts/openartifacts-publish.sh"),
+    join(ROOT, "vendor/openartifacts-publish.sh"),
     join(os.homedir(), "Desktop/ANT-Colony-Vault/.agents/skills/openartifacts-publish/openartifacts-publish.sh"),
   ].find(existsSync);
 
