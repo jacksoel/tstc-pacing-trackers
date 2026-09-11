@@ -1,5 +1,8 @@
 # CNSA / CYS Course Pacing Trackers
 
+[![CI](https://github.com/jacksoel/tstc-pacing-trackers/actions/workflows/ci.yml/badge.svg)](https://github.com/jacksoel/tstc-pacing-trackers/actions/workflows/ci.yml)
+[![Deploy](https://github.com/jacksoel/tstc-pacing-trackers/actions/workflows/deploy.yml/badge.svg)](https://github.com/jacksoel/tstc-pacing-trackers/actions/workflows/deploy.yml)
+
 Interactive pacing guides for the TSTC **Computer Networking & Systems
 Administration (CNSA)** and **Cybersecurity (CYS)** programs. Students pick
 their credential and tracking term; the tracker shows whether they're on pace
