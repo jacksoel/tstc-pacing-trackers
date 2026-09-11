@@ -1,0 +1,38 @@
+# CI — runs on every pull request and push to main.
+#
+# Pipeline stages: validate data -> build -> smoke test.
+# A failure at any stage blocks the merge. This is the automated gate that
+# keeps a bad data edit from ever reaching students.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate data integrity
+        run: node scripts/validate.mjs
+
+      - name: Build artifacts
+        run: node scripts/build.mjs
+
+      - name: Smoke test artifacts
+        run: node test/smoke.mjs
+
+      - name: Upload built pages (for review)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/

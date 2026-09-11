@@ -1,0 +1,46 @@
+# Deploy — runs only on push to main (i.e. after a PR is merged).
+#
+# CD stage: validate, build, smoke test, then publish each program to
+# OpenArtifacts. The license key comes from GitHub Secrets and is never
+# committed. Nothing here publishes from a pull request.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}   # allow a manual "deploy now"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate
+        run: node scripts/validate.mjs
+
+      - name: Build
+        run: node scripts/build.mjs
+
+      - name: Smoke test
+        run: node test/smoke.mjs
+
+      # Each program publishes to its own existing OpenArtifacts document.
+      # IDs live in GitHub Variables (not secret) so they can be changed
+      # without editing code; the license key lives in Secrets.
+      - name: Publish CNSA tracker
+        env:
+          COPILOT_PLUS_LICENSE_KEY: ${{ secrets.COPILOT_PLUS_LICENSE_KEY }}
+          OA_DOC_ID: ${{ vars.CNSA_DOC_ID }}
+        run: node scripts/publish.mjs cnsa "${OA_DOC_ID}" "CNSA-Pacing-Tracker"
+
+      - name: Publish CYS tracker
+        env:
+          COPILOT_PLUS_LICENSE_KEY: ${{ secrets.COPILOT_PLUS_LICENSE_KEY }}
+          OA_DOC_ID: ${{ vars.CYS_DOC_ID }}
+        run: node scripts/publish.mjs cys "${OA_DOC_ID}" "CYS-Pacing-Tracker"
