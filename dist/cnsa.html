@@ -625,7 +625,26 @@ function paceNoteOf(code){
   return {key:"risk", text:`Falling behind — about ${need} module${need===1?"":"s"} below today's line.`};
 }
 
-function daysToDrop(){ return Math.max(0, Math.ceil((DROP_DATE - new Date()) / 86400000)); }
+// Whole calendar days from today until the drop date. Both ends are normalized
+// to UTC midnight, so time-of-day and DST transitions (e.g. the Nov 1 fall-back)
+// can never shift the count by a day — the old ceil() on local timestamps did.
+function daysToDrop(){
+  const now = new Date();
+  const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const dropUTC  = Date.UTC(DROP_DATE.getFullYear(), DROP_DATE.getMonth(), DROP_DATE.getDate());
+  return Math.max(0, Math.round((dropUTC - todayUTC) / 86400000));
+}
+
+// Human phrasing for time remaining: days under two weeks, otherwise a floored
+// week count with the leftover days shown ("9 wk 6 d"), never rounded up.
+function timeLeftLabel(){
+  const d = daysToDrop();
+  if(d <= 0) return "drop date reached";
+  if(d < 7) return `${d} day${d === 1 ? "" : "s"} left`;
+  const w = Math.floor(d / 7), r = d % 7;
+  const wk = `${w} week${w === 1 ? "" : "s"}`;
+  return r === 0 ? `${wk} left` : `${wk} ${r} d left`;
+}
 function weeksBetween(a,b){ return (b - a) / 604800000; }
 
 function statsFor(codes){
@@ -686,7 +705,7 @@ function renderMeta(){
   document.getElementById("metaRow").innerHTML = `
     <div class="chip countdown">
       <div class="k">Drop date</div>
-      <div class="v">Nov 20, 2026 <small>· ${Math.round(p.weeksLeft)} weeks out</small></div>
+      <div class="v">Nov 20, 2026 <small>· ${timeLeftLabel()}</small></div>
       <div class="chip-pace ${paceCls}"><span class="dotp"></span>${paceHtml}</div>
     </div>
     <div class="chip"><div class="k">Plan</div><div class="v">${c.short} <small>· ${c.months} mo</small></div></div>
