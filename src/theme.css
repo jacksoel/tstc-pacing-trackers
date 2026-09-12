@@ -152,7 +152,9 @@
   .s-complete{background:var(--complete);}
 
   /* Per-course pace track: where you are vs where you should be by today */
-  .paceline{margin-top:13px;}
+  /* Extra top margin leaves room for the "today" label that floats above the
+     bar, so it never overlaps the module chips above it. */
+  .paceline{margin-top:32px;}
   .pacebar{position:relative;height:8px;border-radius:999px;background:var(--remaining-tint);border:1px solid var(--line);}
   .pacebar-done{position:absolute;left:0;top:0;bottom:0;background:var(--required);border-radius:999px;transition:width .25s ease;}
   .pacebar-exp{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);opacity:.6;}
