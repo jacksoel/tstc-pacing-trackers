@@ -40,8 +40,11 @@ function runArtifact(programKey) {
   const html = readFileSync(path, "utf8");
   check(html.includes("<!DOCTYPE html>"), `${programKey}: missing doctype`);
   check(html.trimEnd().endsWith("</html>"), `${programKey}: not closed with </html>`);
-  check(!html.includes("openartifacts-header") && !html.includes("openartifacts-footer"),
-    `${programKey}: artifact must not contain OpenArtifacts wrapper (dup risk)`);
+  // The served page gets an OpenArtifacts <div> wrapper injected at deploy time.
+  // Our source may reference the class name in CSS (e.g. to hide the byline),
+  // but must never contain the wrapper *element* — that would duplicate it.
+  check(!/<div class="openartifacts-(header|footer)"/.test(html),
+    `${programKey}: artifact contains an OpenArtifacts wrapper element (dup risk)`);
   check(!/\/\*__[A-Z_]+__\*\//.test(html), `${programKey}: unsubstituted token remains`);
   check(html.includes("brandbar-mark"), `${programKey}: brand bar missing`);
   check(html.includes("managed-by"), `${programKey}: managed-by footer missing`);

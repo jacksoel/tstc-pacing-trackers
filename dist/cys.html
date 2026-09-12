@@ -218,6 +218,11 @@
   .managed-by a{color:var(--recommended);font-weight:700;text-decoration:none;}
   .managed-by a:hover{color:var(--required);text-decoration:underline;}
 
+  /* Hide the "Shared from Copilot for Obsidian" byline that OpenArtifacts
+     injects at serve time. It is not part of this repo's source; this override
+     wins because !important beats the element's inline style. */
+  .openartifacts-header{display:none !important;}
+
 </style>
 <meta property="og:title" content="CYS Course Pacing Tracker"><meta property="og:title" content="CYS Course Pacing Tracker"></head>
 <body>

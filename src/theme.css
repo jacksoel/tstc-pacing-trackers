@@ -209,3 +209,8 @@
   .managed-by{margin-top:20px;text-align:center;font-size:12.5px;color:var(--muted);}
   .managed-by a{color:var(--recommended);font-weight:700;text-decoration:none;}
   .managed-by a:hover{color:var(--required);text-decoration:underline;}
+
+  /* Hide the "Shared from Copilot for Obsidian" byline that OpenArtifacts
+     injects at serve time. It is not part of this repo's source; this override
+     wins because !important beats the element's inline style. */
+  .openartifacts-header{display:none !important;}
