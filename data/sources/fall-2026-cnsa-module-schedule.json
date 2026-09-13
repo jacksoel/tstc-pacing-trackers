@@ -1,0 +1,25 @@
+{
+  "_source": "Instructor-provided Fall 2026 CNSA module schedule (authoritative). Supersedes Areas/CNSA/CNSA-Course-Modules-by-Semester CSV for module COUNT and schedule.",
+  "_note": "modules = count of instructional modules (excludes Course Check-In / Getting Started / Cleanup). firstModule/lastModule are the release dates of the first and last module.",
+  "courses": [
+    { "code": "ITNW1308", "title": "Implementing and Supporting Client Operating Systems", "modules": 7, "firstModule": "2026-09-29", "lastModule": "2026-12-15" },
+    { "code": "ITNW1358", "title": "Network+", "modules": 5, "firstModule": "2026-09-25", "lastModule": "2026-12-15" },
+    { "code": "ITSC1325", "title": "Personal Computer Hardware", "modules": 5, "firstModule": "2026-09-25", "lastModule": "2026-12-15" },
+    { "code": "ITCC1314", "title": "CCNA 1: Introduction to Networks", "modules": 7, "firstModule": "2026-09-25", "lastModule": "2026-12-16" },
+    { "code": "ITNW1345", "title": "Implementing Network Directory Services", "modules": 6, "firstModule": "2026-10-09", "lastModule": "2026-12-15" },
+    { "code": "ITSC1316", "title": "Linux Installation and Configuration", "modules": 8, "firstModule": "2026-09-13", "lastModule": "2026-12-13" },
+    { "code": "ITCC1344", "title": "CCNA 2: Switching, Routing, and Wireless Essentials", "modules": 6, "firstModule": "2026-09-20", "lastModule": "2026-12-12" },
+    { "code": "ITNW1313", "title": "Computer Virtualization", "modules": 5, "firstModule": "2026-09-20", "lastModule": "2026-12-13" },
+    { "code": "ITSY1342", "title": "Information Technology Security", "modules": 5, "firstModule": "2026-09-25", "lastModule": "2026-12-15" },
+    { "code": "ITCC2320", "title": "CCNA 3: Enterprise Networking, Security, and Automation", "modules": 6, "firstModule": "2026-09-29", "lastModule": "2026-12-15" },
+    { "code": "ITNW2354", "title": "Internet/Intranet Server", "modules": 4, "firstModule": "2026-10-02", "lastModule": "2026-12-15" },
+    { "code": "ITSE1329", "title": "Programming Logic and Design", "modules": 5, "firstModule": "2026-09-13", "lastModule": "2026-12-15" },
+    { "code": "ITNW1309", "title": "Fundamentals of Cloud Computing", "modules": 5, "firstModule": "2026-09-25", "lastModule": "2026-12-15" },
+    { "code": "ITCC2343", "title": "Network Security", "modules": 8, "firstModule": "2026-09-12", "lastModule": "2026-12-15" },
+    { "code": "ITSC2370", "title": "Final Project-Systems Administration", "modules": 4, "firstModule": "2026-09-22", "lastModule": "2026-12-08" },
+    { "code": "ITSC2386", "title": "Internship", "modules": 5, "firstModule": "2026-09-25", "lastModule": "2026-12-15" },
+    { "code": "ITSC2380", "title": "Co-op", "modules": 5, "firstModule": "2026-09-25", "lastModule": "2026-12-15" },
+    { "code": "ITNW1336", "title": "Cloud Deployment & Infrastructure Management", "modules": 7, "firstModule": "2026-09-15", "lastModule": "2026-12-15" },
+    { "code": "ITSC2325", "title": "Advanced Linux", "modules": 6, "firstModule": "2026-09-13", "lastModule": "2026-12-13" }
+  ]
+}
