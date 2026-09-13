@@ -662,19 +662,40 @@ function statsFor(codes){
   return {reqTotal, reqDone, recTotal, remTotal, allTotal};
 }
 
+/* Aggregate verdict for the countdown chip.
+   Uses the SAME elapsed-fraction position model as the per-course pills, so the
+   chip and the cards can never contradict each other. (The old rate model
+   compared remaining/weeksLeft against reqTotal/totalWeeks; with zero progress
+   it crossed the threshold a few days into the term and flagged "Behind pace"
+   on day 3 while every course still read "On pace".)
+   pace = modules/week still needed from today — shown as the actionable rate. */
 function paceInfo(){
   const {reqTotal, reqDone} = statsFor(pacedCodes());
-  const now = new Date();
-  const totalWeeks = Math.max(weeksBetween(PACE_START, DROP_DATE), 0.1);
-  const weeksLeft  = Math.max(weeksBetween(now, DROP_DATE), 0);
-  const remaining  = Math.max(reqTotal - reqDone, 0);
-  const pace       = weeksLeft > 0 ? remaining / weeksLeft : remaining;
-  const baseline   = reqTotal / totalWeeks;
+  const weeksLeft = Math.max(daysToDrop() / 7, 0);          // calendar-day based
+  const remaining = Math.max(reqTotal - reqDone, 0);
+  const pace      = weeksLeft > 0 ? remaining / weeksLeft : remaining;
+
+  // Position vs the same expectation the courses use. Use the AVERAGE per-course
+  // gap so the chip's bands match the per-course pills' bands (summing across
+  // courses would make the aggregate several times more sensitive and the chip
+  // would read "Behind pace" while every card read "Slightly behind").
+  const f = elapsedFraction();
+  let n = 0, gapSum = 0;
+  pacedCodes().forEach(code => {
+    const m = COURSE_META[code];
+    if(!m || m.total == null || m.required == null) return;
+    gapSum += done[code] - m.required * f;
+    n++;
+  });
+  const gap = n ? gapSum / n : 0;
+
   let st = "ok", label = "On pace";
   if(reqTotal === 0){ label = "Targets TBD"; }
   else if(remaining <= 0){ label = "Cleared"; }
-  else if(pace > baseline + 0.05){ st = "bad"; label = "Behind pace"; }
-  return {pace, weeksLeft, remaining, reqTotal, baseline, state:st, label};
+  else if(gap >= -0.5){ st = "ok"; label = "On pace"; }
+  else if(gap >= -1.5){ st = "ok"; label = "Slightly behind"; }
+  else { st = "bad"; label = "Behind pace"; }
+  return {pace, weeksLeft, remaining, reqTotal, expected: reqTotal * f, gap, state:st, label};
 }
 
 function fmtPace(x){ const r = Math.round(x*10)/10; return r.toString().replace(/\.0$/,""); }
@@ -703,6 +724,7 @@ function renderMeta(){
   } else if(p.remaining <= 0){
     paceHtml = `<span class="pp-label">Cleared</span><span class="pp-num">· nothing required left</span>`;
   } else {
+    // Verdict + the rate still needed to clear the date.
     paceHtml = `<span class="pp-label">${p.label}</span><span class="pp-num">· ≈${fmtPace(p.pace)} mod/wk</span>`;
   }
   document.getElementById("metaRow").innerHTML = `

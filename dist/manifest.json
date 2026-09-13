@@ -1,17 +1,17 @@
 {
-  "builtAt": "2026-09-12T13:17:25.699Z",
+  "builtAt": "2026-09-13T15:07:21.311Z",
   "artifacts": [
     {
       "program": "cnsa",
       "title": "CNSA Course Pacing Tracker",
       "out": "dist/cnsa.html",
-      "bytes": 44858
+      "bytes": 45987
     },
     {
       "program": "cys",
       "title": "CYS Course Pacing Tracker",
       "out": "dist/cys.html",
-      "bytes": 44528
+      "bytes": 45657
     }
   ]
 }
