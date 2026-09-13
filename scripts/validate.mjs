@@ -8,9 +8,10 @@
  *
  * Run:  node scripts/validate.mjs
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
+import { derive } from "./derive-required.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -89,11 +90,39 @@ function validateDates(config) {
     fail(`config.managedBy: label and url are required`);
 }
 
+/* If an authoritative module schedule exists for a program, its derived
+   counts/targets must match data/courses.json. This keeps hand edits from
+   drifting away from the schedule. */
+function validateScheduleSync(errors) {
+  const schedulePath = join(ROOT, "data/sources/fall-2026-cnsa-module-schedule.json");
+  if (!existsSync(schedulePath)) return;
+  const config = readJSON("data/config.json");
+  const courses = readJSON("data/courses.json");
+  const schedule = JSON.parse(readFileSync(schedulePath, "utf8"));
+  const derived = derive(schedule, config.dropDate);
+  for (const [code, d] of Object.entries(derived)) {
+    const cur = courses.cnsa?.[code];
+    if (!cur) {
+      errors.push(`data/courses.json cnsa: missing course "${code}" from the module schedule`);
+      continue;
+    }
+    for (const key of ["total", "required", "target"]) {
+      if (cur[key] !== d[key]) {
+        errors.push(
+          `cnsa/${code}.${key} is ${cur[key]} but the module schedule derives ${d[key]} ` +
+          `(run: node scripts/derive-required.mjs)`
+        );
+      }
+    }
+  }
+}
+
 function main() {
   const config = readJSON("data/config.json");
   const courses = readJSON("data/courses.json");
 
   validateDates(config);
+  validateScheduleSync(errors);
 
   for (const key of Object.keys(config.programs)) {
     const courseMeta = courses[key];
