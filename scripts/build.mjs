@@ -79,7 +79,7 @@ function main() {
 
   writeFileSync(
     join(ROOT, "dist/manifest.json"),
-    JSON.stringify({ builtAt: new Date().toISOString(), artifacts: manifest }, null, 2)
+    JSON.stringify({ artifacts: manifest }, null, 2) + "\n"
   );
   console.log(`\nBuild complete: ${manifest.length} artifact(s).`);
 }
