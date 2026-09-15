@@ -110,6 +110,26 @@ function runArtifact(programKey) {
     console.log(`  ${programKey}: AAS Sem 5 electives + customizer OK`);
   }
 
+  if (programKey === "cys") {
+    try {
+      vm.runInContext(
+        `state.cred="aas"; state.intensity="ft"; state.trackTerm=5; state.boardAll=false; state.planOpen=true; state.customOpen=true; customSet=termCourses().slice(); renderPlan(); renderBoard();`,
+        sandbox
+      );
+    } catch (err) {
+      failures.push(`${programKey}: Sem 5 render threw: ${err.message}`);
+      return;
+    }
+    const sem5Board = (els.board && els.board.innerHTML) || "";
+    const plan = (els.plan && els.plan.innerHTML) || "";
+    check(sem5Board.includes("ITSY2386"), `${programKey}: AAS Sem 5 focus missing ITSY2386`);
+    check(sem5Board.includes("ITSY2372"), `${programKey}: AAS Sem 5 focus missing ITSY2372`);
+    check(sem5Board.includes("electives · choose one"), `${programKey}: AAS Sem 5 focus missing electives heading`);
+    check(plan.includes("ITSY2386"), `${programKey}: customizer missing ITSY2386`);
+    check(plan.includes("choose one"), `${programKey}: customizer missing choose-one tags`);
+    console.log(`  ${programKey}: AAS Sem 5 electives + customizer OK`);
+  }
+
   console.log(`  ${programKey}: script loaded, rendered OK`);
 }
 
