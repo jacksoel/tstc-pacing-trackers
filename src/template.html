@@ -63,14 +63,22 @@ function flatCourses(c){
   return out;
 }
 
+function optionGroupsOf(c){
+  const groups = [];
+  (c.terms || []).forEach(t => (t.options || []).forEach(g => groups.push(g)));
+  (c.options || []).forEach(g => groups.push(g));
+  return groups;
+}
+
 function displayTerms(){
   const c = cred();
   if(state.intensity === "ft") return c.terms;
   const terms = [];
   const req = flatCourses(c);
+  const og = optionGroupsOf(c);
   for(let i=0;i<req.length;i+=PT_PER_TERM){
     const t = {courses:req.slice(i,i+PT_PER_TERM)};
-    if(i + PT_PER_TERM >= req.length && c.options) t.options = c.options;
+    if(i + PT_PER_TERM >= req.length && og.length) t.options = og;
     terms.push(t);
   }
   return terms;
@@ -293,16 +301,23 @@ function renderPlan(){
   if(state.customOpen){
     const terms = displayTerms();
     const rows = terms.map((t,ti) => {
-      const checks = t.courses.map(code => {
+      // Include the term's "choose one" electives here so courses like ITCC2343
+      // are selectable even before the user has added them to their custom set.
+      const all = t.courses.concat((t.options||[]).reduce((a,g)=>a.concat(g),[]));
+      const seen = {};
+      const uniq = all.filter(code => seen[code] ? false : (seen[code] = true));
+      const checks = uniq.map(code => {
         const m = COURSE_META[code];
         const label = m ? `${code} — ${m.title}` : code;
         const checked = (pacedCodes().indexOf(code)!==-1) ? "checked" : "";
-        return `<label class="custom-row"><input type="checkbox" data-code="${code}" ${checked}>${label}</label>`;
+        const isOpt = (t.options||[]).some(g => g.indexOf(code)!==-1);
+        const tag = isOpt ? ` <em class="custom-elective-tag">choose one</em>` : "";
+        return `<label class="custom-row"><input type="checkbox" data-code="${code}" ${checked}>${label}${tag}</label>`;
       }).join("");
       return `<div class="custom-term">${unitWord()} ${ti+1}</div><div class="custom-grid">${checks}</div>`;
     }).join("");
     panel = `<div class="custom-panel">
-      <p class="custom-hint">Pre-filled with your tracking term. Check or uncheck the exact courses you're enrolled in — the paced roll-up follows your selection.</p>
+      <p class="custom-hint">Pre-filled with your tracking term. Check or uncheck the exact courses you're enrolled in — the paced roll-up follows your selection. Courses marked <em class="custom-elective-tag">choose one</em> are alternate options for that term.</p>
       ${rows}
       <div class="custom-actions">
         <button class="custom-apply" id="customReset">Reset to ${unitWord()} ${state.trackTerm}</button>
@@ -493,8 +508,20 @@ function renderBoard(){
     const cards = ordered.length
       ? ordered.map(o => courseCard(o.code, o.optional)).join("")
       : `<div class="course opt"><div class="tbd-note">No courses selected. Open “Change” above and use “Customize courses” to add the courses you're taking.</div></div>`;
+    // Always surface the tracking term's "choose one" electives so alternate
+    // options (e.g. ITCC2343 in Semester 5) are visible without customizing.
+    const orderedCodes = ordered.map(o => o.code);
+    const tTerm = termAt(ti);
+    const optGroups = (tTerm.options||[])
+      .map(g => g.filter(c => COURSE_META[c] && orderedCodes.indexOf(c)===-1))
+      .filter(g => g.length);
+    const optHtml = optGroups.length
+      ? `<h2 class="sem-head" style="margin-top:16px">${label(state.trackTerm)} electives · choose one</h2>` +
+        optGroups.map(g => g.map(c => courseCard(c, true)).join("")).join("") +
+        `<p class="electives-note">Pick the elective you're actually enrolled in via “Customize courses” to fold it into the roll-up above.</p>`
+      : "";
     const scopeName = hasCustom() ? "Your custom course set" : `${label(state.trackTerm)} · tracking scope`;
-    html = `<div class="sem-group"><h2 class="sem-head">${scopeName}<span class="tag cur-tag">Focus</span></h2>${cards}</div>`;
+    html = `<div class="sem-group"><h2 class="sem-head">${scopeName}<span class="tag cur-tag">Focus</span></h2>${cards}${optHtml}</div>`;
     toggle = terms.length > 1 ? `Focused on your tracking scope · <button id="boardToggle">Show full plan (${terms.length} terms)</button>` : "";
   }
 
