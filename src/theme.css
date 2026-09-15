@@ -171,6 +171,7 @@
   .pace-note.ontrack,.pace-note.met,.pace-note.complete{color:var(--ontrack);}
   .pace-note.behind{color:var(--minimum);}
   .pace-note.risk{color:var(--risk);}
+  .pace-note.count{color:var(--muted);font-weight:400;font-style:italic;}
 
   .cells{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;}
   .cell{flex:1 1 42px;min-width:38px;max-width:74px;height:44px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--card);cursor:pointer;transition:.13s;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);}
