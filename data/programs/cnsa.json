@@ -37,18 +37,18 @@
       {
         "courses": [
           "ITNW2335"
+        ],
+        "options": [
+          [
+            "ITNW1309",
+            "ITCC2343"
+          ],
+          [
+            "ITSC2370",
+            "ITSC2386"
+          ]
         ]
       }
-    ],
-    "options": [
-      [
-        "ITNW1309",
-        "ITCC2343"
-      ],
-      [
-        "ITSC2370",
-        "ITSC2386"
-      ]
     ]
   },
   "cer2": {

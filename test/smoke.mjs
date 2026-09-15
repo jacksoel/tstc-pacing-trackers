@@ -90,6 +90,26 @@ function runArtifact(programKey) {
   check(/class="course/.test(board), `${programKey}: no course cards rendered`);
   check(board.includes("paceline"), `${programKey}: no pace track rendered`);
 
+  if (programKey === "cnsa") {
+    try {
+      vm.runInContext(
+        `state.cred="aas"; state.intensity="ft"; state.trackTerm=5; state.boardAll=false; state.planOpen=true; state.customOpen=true; customSet=termCourses().slice(); renderPlan(); renderBoard();`,
+        sandbox
+      );
+    } catch (err) {
+      failures.push(`${programKey}: Sem 5 render threw: ${err.message}`);
+      return;
+    }
+    const sem5Board = (els.board && els.board.innerHTML) || "";
+    const plan = (els.plan && els.plan.innerHTML) || "";
+    check(sem5Board.includes("ITCC2343"), `${programKey}: AAS Sem 5 focus missing ITCC2343`);
+    check(sem5Board.includes("ITNW1309"), `${programKey}: AAS Sem 5 focus missing ITNW1309`);
+    check(sem5Board.includes("electives · choose one"), `${programKey}: AAS Sem 5 focus missing electives heading`);
+    check(plan.includes("ITCC2343"), `${programKey}: customizer missing ITCC2343`);
+    check(plan.includes("choose one"), `${programKey}: customizer missing choose-one tags`);
+    console.log(`  ${programKey}: AAS Sem 5 electives + customizer OK`);
+  }
+
   console.log(`  ${programKey}: script loaded, rendered OK`);
 }
 
