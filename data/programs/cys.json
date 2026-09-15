@@ -38,14 +38,14 @@
         "courses": [
           "ITSY2359",
           "ITSY2371"
+        ],
+        "options": [
+          [
+            "ITSY2386",
+            "ITSY2372"
+          ]
         ]
       }
-    ],
-    "options": [
-      [
-        "ITSY2386",
-        "ITSY2372"
-      ]
     ]
   },
   "cer2": {
