@@ -130,6 +130,56 @@ function runArtifact(programKey) {
     console.log(`  ${programKey}: AAS Sem 5 electives + customizer OK`);
   }
 
+  // Full render sweep: every credential x intensity x term, plus the all-terms
+  // view. This is the regression guard for the "modules mapped but no drop-date
+  // target" case (CYS ITSC1316 / ITSY1342 / ITNW1354), which rendered
+  // width:NaN% and "required by Nov 20: null". A single default-term smoke pass
+  // never reached those branches.
+  const sweepCreds = vm.runInContext("CRED_ORDER.slice()", sandbox);
+  let swept = 0;
+  for (const cred of sweepCreds) {
+    for (const intensity of ["ft", "pt"]) {
+      const nTerms = vm.runInContext(
+        `state.cred=${JSON.stringify(cred)}; state.intensity=${JSON.stringify(intensity)}; customSet=null; clampTerm(); termCount()`,
+        sandbox
+      );
+      for (let t = 1; t <= nTerms; t++) {
+        for (const k of Object.keys(els)) els[k].innerHTML = "";
+        let threw = null;
+        try {
+          vm.runInContext(
+            `state.cred=${JSON.stringify(cred)}; state.intensity=${JSON.stringify(intensity)}; state.trackTerm=${t}; state.boardAll=false; state.planOpen=true; state.customOpen=true; customSet=termCourses().slice(); renderAll();`,
+            sandbox
+          );
+        } catch (err) { threw = err.message; }
+        const rendered = Object.keys(els).map((k) => els[k].innerHTML).join("\n");
+        const where = `${programKey} ${cred}/${intensity}/T${t}`;
+        check(!threw, `${where}: render threw: ${threw}`);
+        check(!rendered.includes("undefined"), `${where}: rendered output contains "undefined"`);
+        check(!rendered.includes("NaN"), `${where}: rendered output contains "NaN"`);
+        const cards = (rendered.match(/class="course/g) || []).length;
+        check(cards > 0, `${where}: no course cards rendered`);
+        swept++;
+      }
+    }
+    // All-terms board view for this credential.
+    for (const k of Object.keys(els)) els[k].innerHTML = "";
+    let threw = null;
+    try {
+      vm.runInContext(
+        `state.cred=${JSON.stringify(cred)}; state.intensity="ft"; state.trackTerm=1; state.boardAll=true; customSet=null; renderAll();`,
+        sandbox
+      );
+    } catch (err) { threw = err.message; }
+    const rendered = Object.keys(els).map((k) => els[k].innerHTML).join("\n");
+    const where = `${programKey} ${cred}/ft/allTerms`;
+    check(!threw, `${where}: render threw: ${threw}`);
+    check(!rendered.includes("undefined"), `${where}: rendered output contains "undefined"`);
+    check(!rendered.includes("NaN"), `${where}: rendered output contains "NaN"`);
+    swept++;
+  }
+  console.log(`  ${programKey}: swept ${swept} credential/intensity/term views (no NaN/undefined)`);
+
   console.log(`  ${programKey}: script loaded, rendered OK`);
 }
 

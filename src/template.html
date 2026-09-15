@@ -440,17 +440,39 @@ function courseCard(code, optional){
     const isDone = i <= done[code];
     cells += `<div class="cell ${isDone?"done":""}" data-zone="${z}" data-code="${code}" data-i="${i}"><span class="num">${i}</span></div>`;
   }
-  const rec = m.target > m.required ? ` · recommended ${m.target}` : "";
-  const caption = `${m.total} modules · required by Nov 20: ${m.required}${rec}`;
-  const statusHtml = `<span class="status ${st.cls}">${st.label}${m.required!=null?` · ${done[code]}/${m.total}`:""}</span>`;
+  const hasReq = m.required != null;
+  const rec = (hasReq && m.target > m.required) ? ` · recommended ${m.target}` : "";
+  const caption = hasReq
+    ? `${m.total} modules · required by Nov 20: ${m.required}${rec}`
+    : `${m.total} modules · drop-date target not set yet`;
+  const statusHtml = `<span class="status ${st.cls}">${st.label}${hasReq?` · ${done[code]}/${m.total}`:""}</span>`;
 
   // Pace track: shows progress toward the Nov. 20 requirement vs today's line.
-  const req = m.required;
+  // A course can have a module map but no drop-date target yet (CYS ITSC1316 /
+  // ITSY1342 / ITNW1354). Without a target there is no "required" line to pace
+  // against, so render a plain progress track instead of dividing by null
+  // (which produced width:NaN% and a "Nov. 20 target: null" caption).
   const exp = Math.min(1, Math.max(0, elapsedFraction()));
-  const donePct = Math.min(100, (done[code] / req) * 100);
   const expPct = Math.min(100, exp * 100);
   const note = paceNoteOf(code);
-  const trackHtml = `
+  let trackHtml;
+  if(!hasReq){
+    const totalPct = m.total ? Math.min(100, (done[code] / m.total) * 100) : 0;
+    trackHtml = `
+    <div class="paceline">
+      <div class="pacebar">
+        <div class="pacebar-done" style="width:${totalPct}%"></div>
+      </div>
+      <div class="pace-cap">
+        <span>Drop-date target not set yet</span>
+        <span class="pc-right">${done[code]} of ${m.total} modules done</span>
+      </div>
+      <div class="pace-note count">No Nov. 20 target is defined for this course yet, so it isn't paced — it shows total progress only.</div>
+    </div>`;
+  } else {
+    const req = m.required;
+    const donePct = Math.min(100, (done[code] / req) * 100);
+    trackHtml = `
     <div class="paceline">
       <div class="pacebar">
         <div class="pacebar-done" style="width:${donePct}%"></div>
@@ -462,6 +484,7 @@ function courseCard(code, optional){
       </div>
       ${note?`<div class="pace-note ${note.key}">${note.text}</div>`:""}
     </div>`;
+  }
 
   return `<div class="course${optional?" opt":""}">
     <div class="c-top">
