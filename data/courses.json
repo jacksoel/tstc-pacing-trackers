@@ -138,61 +138,61 @@
       "title": "Network+",
       "total": 5,
       "required": 3,
-      "target": 3
+      "target": 4
     },
     "ITNW1308": {
       "title": "Implementing and Supporting Client Operating Systems",
       "total": 7,
-      "required": 3,
-      "target": 4
+      "required": 5,
+      "target": 6
     },
     "ITSC1325": {
       "title": "Personal Computer Hardware",
       "total": 5,
       "required": 3,
-      "target": 3
+      "target": 4
     },
     "ITSC1316": {
       "title": "Linux Installation and Configuration",
       "total": 8,
-      "required": null,
-      "target": null
+      "required": 6,
+      "target": 7
     },
     "ITSY2300": {
       "title": "Operating System Security",
       "total": 5,
       "required": 3,
-      "target": 3
+      "target": 4
     },
     "ITSY1342": {
       "title": "Information Technology Security",
       "total": 5,
-      "required": null,
-      "target": null
+      "required": 3,
+      "target": 4
     },
     "ITSY1374": {
       "title": "Secure Linux Administration",
       "total": 6,
-      "required": 3,
-      "target": 4
+      "required": 4,
+      "target": 5
     },
     "ITNW1354": {
       "title": "Implementing and Supporting Servers",
       "total": 6,
-      "required": null,
-      "target": null
+      "required": 4,
+      "target": 5
     },
     "ITSC1342": {
       "title": "Shell Programming",
       "total": 5,
       "required": 3,
-      "target": 3
+      "target": 4
     },
     "ITDF1300": {
       "title": "Introduction to Digital Forensics",
-      "total": 5,
-      "required": 3,
-      "target": 4
+      "total": 6,
+      "required": 4,
+      "target": 5
     },
     "ITSY2341": {
       "title": "Security Management Practices",
@@ -209,8 +209,8 @@
     "ITSY2359": {
       "title": "Security Assessment and Auditing",
       "total": 6,
-      "required": 3,
-      "target": 4
+      "required": 4,
+      "target": 5
     },
     "ITSY2371": {
       "title": "Secure Cloud Implementation",
@@ -232,27 +232,27 @@
     },
     "ITDF2420": {
       "title": "Digital Forensics Collection",
-      "total": null,
-      "required": null,
-      "target": null
+      "total": 6,
+      "required": 4,
+      "target": 5
     },
     "ITDF2430": {
       "title": "Digital Forensics Analysis",
-      "total": null,
-      "required": null,
-      "target": null
+      "total": 5,
+      "required": 3,
+      "target": 4
     },
     "ITDF2425": {
       "title": "Digital Forensics Tools",
-      "total": null,
-      "required": null,
-      "target": null
+      "total": 6,
+      "required": 4,
+      "target": 5
     },
     "ITDF2435": {
       "title": "Comprehensive Digital Forensics Project",
-      "total": null,
-      "required": null,
-      "target": null
+      "total": 3,
+      "required": 2,
+      "target": 3
     }
   }
 }

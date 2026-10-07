@@ -2,6 +2,16 @@
   "dropDate": "2026-11-20",
   "paceStart": "2026-09-08",
   "ptPerTerm": 2,
+  "schedules": [
+    {
+      "program": "cnsa",
+      "file": "data/sources/fall-2026-cnsa-module-schedule.json"
+    },
+    {
+      "program": "cys",
+      "file": "data/sources/fall-2026-cys-module-schedule.json"
+    }
+  ],
   "programs": {
     "cnsa": {
       "name": "Computer Networking & Systems Administration",

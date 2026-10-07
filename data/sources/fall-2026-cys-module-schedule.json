@@ -1,0 +1,50 @@
+{
+  "_source": "TSTC Cybersecurity 'Official Guide Dates' sheet (Fall 2026) — Areas/CYS/CYS Official Guide Dates.xlsx - Google Sheets.pdf. Authoritative for CYS module guiding dates.",
+  "_note": "One guiding due date per module, transcribed verbatim from the guide sheet (no interpolation). 'modules' = number of guiding dates; moduleDates.length must equal modules. Courses with no guiding dates in the sheet are omitted — that includes the Sem 1–2 courses shared with CNSA (ITNW1308, ITSC1325, ITSC1316), which take their pacing from the CNSA schedule instead, plus ITSY2341 / ITSY2371 / ITSY2372 (guide reads 'Starting FA27') and ITSY2386 (not in the guide). ITNW2380 and the 'TEACH OUT - old degree plans' block are present in the sheet but absent from the CYS plans, so they are not scheduled here.",
+  "courses": [
+    { "code": "ITNW1358", "title": "Network+", "modules": 5,
+      "firstModule": "2026-09-25", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-25", "2026-10-16", "2026-11-06", "2026-11-27", "2026-12-15"] },
+
+    { "code": "ITSY2300", "title": "Operating System Security", "modules": 5,
+      "firstModule": "2026-09-25", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-25", "2026-10-16", "2026-11-06", "2026-11-27", "2026-12-15"] },
+    { "code": "ITSY1342", "title": "Information Technology Security", "modules": 5,
+      "firstModule": "2026-09-25", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-25", "2026-10-16", "2026-11-06", "2026-11-27", "2026-12-15"] },
+
+    { "code": "ITSY1374", "title": "Secure Linux Administration", "modules": 6,
+      "firstModule": "2026-09-18", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-18", "2026-10-02", "2026-10-23", "2026-11-06", "2026-11-27", "2026-12-15"] },
+    { "code": "ITNW1354", "title": "Implementing and Supporting Servers", "modules": 6,
+      "firstModule": "2026-09-18", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-18", "2026-10-02", "2026-10-23", "2026-11-06", "2026-11-27", "2026-12-15"] },
+    { "code": "ITSC1342", "title": "Shell Programming", "modules": 5,
+      "firstModule": "2026-09-25", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-25", "2026-10-16", "2026-11-06", "2026-11-27", "2026-12-15"] },
+
+    { "code": "ITDF1300", "title": "Introduction to Digital Forensics", "modules": 6,
+      "firstModule": "2026-09-18", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-18", "2026-10-02", "2026-10-23", "2026-11-06", "2026-11-27", "2026-12-15"] },
+    { "code": "ITSY2345", "title": "Network Defense and Countermeasures", "modules": 6,
+      "firstModule": "2026-09-18", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-18", "2026-10-02", "2026-10-23", "2026-11-06", "2026-11-27", "2026-12-15"] },
+
+    { "code": "ITSY2359", "title": "Security Assessment and Auditing", "modules": 6,
+      "firstModule": "2026-09-18", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-18", "2026-10-02", "2026-10-23", "2026-11-06", "2026-11-27", "2026-12-15"] },
+
+    { "code": "ITDF2420", "title": "Digital Forensics Collection", "modules": 6,
+      "firstModule": "2026-09-18", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-18", "2026-10-02", "2026-10-23", "2026-11-06", "2026-11-27", "2026-12-15"] },
+    { "code": "ITDF2425", "title": "Digital Forensics Tools", "modules": 6,
+      "firstModule": "2026-09-18", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-18", "2026-10-02", "2026-10-23", "2026-11-06", "2026-11-27", "2026-12-15"] },
+    { "code": "ITDF2430", "title": "Digital Forensics Analysis", "modules": 5,
+      "firstModule": "2026-09-25", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-09-25", "2026-10-16", "2026-11-06", "2026-11-27", "2026-12-15"] },
+    { "code": "ITDF2435", "title": "Comprehensive Digital Forensics Project", "modules": 3,
+      "firstModule": "2026-10-02", "lastModule": "2026-12-15",
+      "moduleDates": ["2026-10-02", "2026-11-06", "2026-12-15"] }
+  ]
+}
