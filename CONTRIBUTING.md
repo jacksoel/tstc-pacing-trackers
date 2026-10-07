@@ -35,13 +35,26 @@ publishes the updated tracker.
 
 ```json
 "cys": {
-  "ITSY1342": { "title": "Information Technology Security", "total": 5, "required": null, "target": null }
+  "ITSY2341": { "title": "Security Management Practices", "total": null, "required": null, "target": null }
 }
 ```
 
 - `total` — how many modules the course has (`null` = not yet mapped)
 - `required` — modules that must be done by Nov. 20 (`null` = target not set)
 - `target` — recommended pace, `≥ required` (`null` = none)
+
+**Scheduled courses are not hand-set.** If a course appears in a file listed under
+`config.schedules`, its `total` / `required` / `target` are **derived** from that
+schedule and `data/courses.json` is rewritten to match. Hand-editing them will fail
+CI. Edit the schedule instead:
+
+- `data/sources/fall-2026-cnsa-module-schedule.json` — owns the CNSA catalog.
+- `data/sources/fall-2026-cys-module-schedule.json` — owns the CYS catalog.
+
+Then run `node scripts/derive-required.mjs`. A scheduled course keeps the same
+values in **every** program that lists it, so a course shared by CNSA and CYS can
+never drift between the two pages. Adding a program's schedule is a one-entry
+change to `config.schedules` — no code edit.
 
 **A program's term structure** — `data/programs/<program>.json`. Each credential
 lists `terms`, and each term lists course codes. A `terms[].options` array marks
@@ -59,6 +72,11 @@ From `scripts/validate.mjs`:
 - No course appears twice within one credential
 - `dropDate` is after `paceStart`; both are `YYYY-MM-DD`
 - Every credential in `credentialOrder` exists
+- Every program block agrees with the module schedule for any scheduled course
+  (this is what keeps a shared course identical on both pages)
+- Every scheduled course exists in its owning program's block
+- No two schedules disagree on the same course; each `moduleDates[]` matches its
+  `modules` count, is `YYYY-MM-DD`, and ascends in module order
 
 If your pull request goes red, read the error — it names the exact course and
 rule. Fix the data and push again; CI re-runs.

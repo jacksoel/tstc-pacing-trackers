@@ -8,10 +8,10 @@
  *
  * Run:  node scripts/validate.mjs
  */
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
-import { derive } from "./derive-required.mjs";
+import { loadSchedules, planScheduleSync } from "./derive-required.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -21,6 +21,8 @@ const errors = [];
 const warnings = [];
 const fail = (msg) => errors.push(msg);
 const warn = (msg) => warnings.push(msg);
+
+const ISO = /^\d{4}-\d{2}-\d{2}$/;
 
 function validateCourse(code, m, program) {
   const where = `${program}/${code}`;
@@ -79,10 +81,9 @@ function validateProgram(key, prog, creds, courseMeta) {
 }
 
 function validateDates(config) {
-  const iso = /^\d{4}-\d{2}-\d{2}$/;
-  if (!iso.test(config.dropDate)) fail(`config.dropDate must be YYYY-MM-DD (got "${config.dropDate}")`);
-  if (!iso.test(config.paceStart)) fail(`config.paceStart must be YYYY-MM-DD (got "${config.paceStart}")`);
-  if (iso.test(config.dropDate) && iso.test(config.paceStart) && config.paceStart >= config.dropDate)
+  if (!ISO.test(config.dropDate)) fail(`config.dropDate must be YYYY-MM-DD (got "${config.dropDate}")`);
+  if (!ISO.test(config.paceStart)) fail(`config.paceStart must be YYYY-MM-DD (got "${config.paceStart}")`);
+  if (ISO.test(config.dropDate) && ISO.test(config.paceStart) && config.paceStart >= config.dropDate)
     fail(`config.paceStart (${config.paceStart}) must be before dropDate (${config.dropDate})`);
   if (!Number.isInteger(config.ptPerTerm) || config.ptPerTerm < 1)
     fail(`config.ptPerTerm must be an integer >= 1 (got ${config.ptPerTerm})`);
@@ -90,30 +91,84 @@ function validateDates(config) {
     fail(`config.managedBy: label and url are required`);
 }
 
-/* If an authoritative module schedule exists for a program, its derived
-   counts/targets must match data/courses.json. This keeps hand edits from
-   drifting away from the schedule. */
-function validateScheduleSync(errors) {
-  const schedulePath = join(ROOT, "data/sources/fall-2026-cnsa-module-schedule.json");
-  if (!existsSync(schedulePath)) return;
-  const config = readJSON("data/config.json");
-  const courses = readJSON("data/courses.json");
-  const schedule = JSON.parse(readFileSync(schedulePath, "utf8"));
-  const derived = derive(schedule, config.dropDate);
-  for (const [code, d] of Object.entries(derived)) {
-    const cur = courses.cnsa?.[code];
-    if (!cur) {
-      errors.push(`data/courses.json cnsa: missing course "${code}" from the module schedule`);
+/* The schedule documents ARE the source of truth, so a malformed one must fail
+   loudly rather than silently deriving nonsense. Checks the shape of every file
+   named in config.schedules. (A code may appear in more than one schedule — the
+   two must then derive identical values, which validateScheduleSync enforces.) */
+function validateSchedules(config) {
+  if (!Array.isArray(config.schedules) || config.schedules.length === 0)
+    return fail(`config.schedules must be a non-empty array`);
+
+  let loaded;
+  try {
+    loaded = loadSchedules(config);
+  } catch (err) {
+    return fail(`config.schedules: ${err.message}`);
+  }
+
+  for (const { program, file, schedule } of loaded) {
+    if (!config.programs?.[program])
+      fail(`config.schedules: "${program}" is not a configured program (${file})`);
+    if (!Array.isArray(schedule.courses) || schedule.courses.length === 0) {
+      fail(`${file}: courses must be a non-empty array`);
       continue;
     }
-    for (const key of ["total", "required", "target"]) {
-      if (cur[key] !== d[key]) {
-        errors.push(
-          `cnsa/${code}.${key} is ${cur[key]} but the module schedule derives ${d[key]} ` +
-          `(run: node scripts/derive-required.mjs)`
-        );
+    const seen = new Set();
+    for (const c of schedule.courses) {
+      const at = `${file} ${c.code || "(no code)"}`;
+      if (!c.code) fail(`${file}: a course entry is missing "code"`);
+      else if (seen.has(c.code)) fail(`${at}: declared more than once in ${file}`);
+      else seen.add(c.code);
+
+      if (!Number.isInteger(c.modules) || c.modules <= 0)
+        fail(`${at}: modules must be a positive integer`);
+
+      if (c.moduleDates != null) {
+        // Explicit per-module dates. Length must match `modules`, the dates must
+        // be YYYY-MM-DD, and they must be strictly ascending (module order).
+        if (!Array.isArray(c.moduleDates) || c.moduleDates.length === 0) {
+          fail(`${at}: moduleDates must be a non-empty array when present`);
+        } else {
+          if (c.moduleDates.length !== c.modules)
+            fail(`${at}: moduleDates has ${c.moduleDates.length} entries but modules is ${c.modules}`);
+          c.moduleDates.forEach((d, i) => {
+            if (!ISO.test(d)) fail(`${at}: moduleDates[${i}] is not YYYY-MM-DD (got "${d}")`);
+            if (i > 0 && c.moduleDates[i - 1] >= d)
+              fail(`${at}: moduleDates must be strictly ascending (${c.moduleDates[i - 1]} then ${d})`);
+          });
+        }
+      } else {
+        // Interpolated form: first/last module date across `modules`.
+        if (!ISO.test(c.firstModule)) fail(`${at}: firstModule must be YYYY-MM-DD`);
+        if (!ISO.test(c.lastModule)) fail(`${at}: lastModule must be YYYY-MM-DD`);
+        if (c.firstModule >= c.lastModule) fail(`${at}: firstModule must be before lastModule`);
       }
     }
+  }
+}
+
+/* Every program block that references a scheduled course must agree with the
+   derived counts/targets. This is what keeps a course shared by two programs
+   (e.g. ITNW1358 on CNSA + CYS) from drifting — a hand edit to either copy
+   fails CI. */
+function validateScheduleSync(errors) {
+  const config = readJSON("data/config.json");
+  const courses = readJSON("data/courses.json");
+
+  let plan;
+  try {
+    plan = planScheduleSync(courses, config);
+  } catch (err) {
+    errors.push(`schedule sync: ${err.message}`);
+    return;
+  }
+
+  for (const m of plan.missing) errors.push(m);
+  for (const d of plan.drift) {
+    errors.push(
+      `${d.program}/${d.code}.${d.key} is ${d.from} but the module schedule derives ${d.to} ` +
+      `(run: node scripts/derive-required.mjs)`
+    );
   }
 }
 
@@ -122,6 +177,7 @@ function main() {
   const courses = readJSON("data/courses.json");
 
   validateDates(config);
+  validateSchedules(config);
   validateScheduleSync(errors);
 
   for (const key of Object.keys(config.programs)) {
