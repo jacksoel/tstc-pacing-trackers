@@ -37,13 +37,21 @@ jobs:
       # Each program publishes to its own existing OpenArtifacts document.
       # IDs live in GitHub Variables (not secret) so they can be changed
       # without editing code; the license key lives in Secrets.
+      #
+      # A program with no document (unpublished, or not yet created) has its
+      # variable unset, and its step is skipped — so Deploy stays green instead
+      # of failing on a deleted doc id. To re-enable publishing, create a fresh
+      # document with a POST (see the publish runbook, §5) and set the variable
+      # again. Never re-set a variable to an id that has been unshared.
       - name: Publish CNSA tracker
+        if: ${{ vars.CNSA_DOC_ID != '' }}
         env:
           COPILOT_PLUS_LICENSE_KEY: ${{ secrets.COPILOT_PLUS_LICENSE_KEY }}
           OA_DOC_ID: ${{ vars.CNSA_DOC_ID }}
         run: node scripts/publish.mjs cnsa "${OA_DOC_ID}" "CNSA-Pacing-Tracker"
 
       - name: Publish CYS tracker
+        if: ${{ vars.CYS_DOC_ID != '' }}
         env:
           COPILOT_PLUS_LICENSE_KEY: ${{ secrets.COPILOT_PLUS_LICENSE_KEY }}
           OA_DOC_ID: ${{ vars.CYS_DOC_ID }}
